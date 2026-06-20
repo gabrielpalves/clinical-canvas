@@ -58,10 +58,15 @@ export interface DiagramConfig {
   circleScale: number;
 
   /* distribution */
-  /** label over the highlighted region. */
+  /** "region" label — freely positioned via markerX/markerY. */
   marker: string;
-  /** label fixed at the curve's peak. */
+  /** "peak" label — freely positioned via peakX/peakY. */
   peak: string;
+  /** label positions, 0..1 across the plot area (independent of the region). */
+  peakX: number;
+  peakY: number;
+  markerX: number;
+  markerY: number;
   /** highlighted band under the curve, 0..1 along the x-axis. */
   regionStart: number;
   regionEnd: number;

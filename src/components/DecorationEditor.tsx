@@ -20,12 +20,17 @@ const COLORS: Array<{ id: Decoration['color']; label: string }> = [
   { id: 'muted', label: 'Neutro' },
 ];
 
-function Slider({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (v: number) => void }) {
+function Slider({ label, value, min, max, def, onChange }: { label: string; value: number; min: number; max: number; def: number; onChange: (v: number) => void }) {
+  const apply = (v: number) => {
+    if (!Number.isNaN(v)) onChange(Math.max(min, Math.min(max, v)));
+  };
   return (
     <div className="size-row">
-      <span className="size-row__icon size-row__icon--wide">{label}</span>
-      <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(Number(e.target.value))} />
-      <span className="size-row__val">{value}</span>
+      <span className="size-row__icon size-row__icon--wide" title="Clique duplo no controle = padrão">{label}</span>
+      <input type="range" min={min} max={max} value={value}
+        onChange={(e) => apply(Number(e.target.value))}
+        onDoubleClick={() => onChange(def)} />
+      <input className="size-row__num" type="number" value={value} onChange={(e) => apply(Number(e.target.value))} />
     </div>
   );
 }
@@ -49,11 +54,11 @@ export function DecorationEditor({
           <Trash2 size={14} />
         </button>
       </div>
-      <Slider label="Horizontal" value={Math.round(d.x * 100)} min={0} max={100} onChange={(v) => onChange({ x: v / 100 })} />
-      <Slider label="Vertical" value={Math.round(d.y * 100)} min={0} max={100} onChange={(v) => onChange({ y: v / 100 })} />
-      <Slider label="Tamanho" value={Math.round(d.size * 100)} min={5} max={75} onChange={(v) => onChange({ size: v / 100 })} />
-      <Slider label="Rotação" value={Math.round(d.rotation)} min={0} max={360} onChange={(v) => onChange({ rotation: v })} />
-      <Slider label="Opacidade" value={Math.round(d.opacity * 100)} min={5} max={100} onChange={(v) => onChange({ opacity: v / 100 })} />
+      <Slider label="Horizontal" value={Math.round(d.x * 100)} min={0} max={100} def={50} onChange={(v) => onChange({ x: v / 100 })} />
+      <Slider label="Vertical" value={Math.round(d.y * 100)} min={0} max={100} def={50} onChange={(v) => onChange({ y: v / 100 })} />
+      <Slider label="Tamanho" value={Math.round(d.size * 100)} min={5} max={75} def={28} onChange={(v) => onChange({ size: v / 100 })} />
+      <Slider label="Rotação" value={Math.round(d.rotation)} min={0} max={360} def={0} onChange={(v) => onChange({ rotation: v })} />
+      <Slider label="Opacidade" value={Math.round(d.opacity * 100)} min={5} max={100} def={50} onChange={(v) => onChange({ opacity: v / 100 })} />
       <div className="seg seg--sm" style={{ marginTop: 8 }}>
         {COLORS.map((col) => (
           <button key={col.id} className={`seg__btn${d.color === col.id ? ' is-active' : ''}`} onClick={() => onChange({ color: col.id })}>

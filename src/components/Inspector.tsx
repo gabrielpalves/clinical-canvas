@@ -129,20 +129,43 @@ export function Inspector() {
   const setRot = (k: string, v: number) =>
     setDg({ labelRots: { ...dg.labelRots, [k]: v } });
 
+  /** a labelled slider with an editable number; double-click the slider to reset. */
+  const ctrlRow = (
+    icon: string,
+    value: number,
+    min: number,
+    max: number,
+    def: number,
+    onChange: (v: number) => void,
+    suffix = '',
+  ) => {
+    const apply = (v: number) => {
+      if (!Number.isNaN(v)) onChange(Math.max(min, Math.min(max, v)));
+    };
+    return (
+      <div className="size-row">
+        <span className="size-row__icon" title="Clique duplo no controle = padrão">{icon}</span>
+        <input type="range" min={min} max={max} value={value}
+          onChange={(e) => apply(Number(e.target.value))}
+          onDoubleClick={() => onChange(def)} />
+        <input className="size-row__num" type="number" value={value}
+          onChange={(e) => apply(Number(e.target.value))} />
+        <span className="size-row__suffix">{suffix}</span>
+      </div>
+    );
+  };
+
   const sizeRow = (key: string) => (
     <>
-      <div className="size-row">
-        <span className="size-row__icon">A</span>
-        <input type="range" min={50} max={220} value={Math.round(sz(key) * 100)}
-          onChange={(e) => setSize(key, Number(e.target.value) / 100)} />
-        <span className="size-row__val">{Math.round(sz(key) * 100)}%</span>
-      </div>
-      <div className="size-row">
-        <span className="size-row__icon">⟳</span>
-        <input type="range" min={-90} max={90} value={Math.round(rot(key))}
-          onChange={(e) => setRot(key, Number(e.target.value))} />
-        <span className="size-row__val">{Math.round(rot(key))}°</span>
-      </div>
+      {ctrlRow('A', Math.round(sz(key) * 100), 50, 220, 100, (v) => setSize(key, v / 100), '%')}
+      {ctrlRow('⟳', Math.round(rot(key)), -90, 90, 0, (v) => setRot(key, v), '°')}
+    </>
+  );
+
+  const posRows = (xv: number, yv: number, onX: (v: number) => void, onY: (v: number) => void) => (
+    <>
+      {ctrlRow('↔', Math.round(xv * 100), 0, 100, 50, (v) => onX(v / 100), '%')}
+      {ctrlRow('↕', Math.round(yv * 100), 0, 100, 30, (v) => onY(v / 100), '%')}
     </>
   );
 
@@ -480,8 +503,13 @@ export function Inspector() {
             <>
               {diaText('Eixo horizontal (X)', dg.xLabel, (v) => setDg({ xLabel: v }), 'xLabel')}
               {diaText('Eixo vertical (Y)', dg.yLabel, (v) => setDg({ yLabel: v }), 'yLabel')}
-              {diaText('Texto do pico (fixo)', dg.peak, (v) => setDg({ peak: v }), 'peak')}
-              {diaText('Texto sobre a área destacada', dg.marker, (v) => setDg({ marker: v }), 'marker')}
+              {diaText('Texto do pico', dg.peak, (v) => setDg({ peak: v }), 'peak')}
+              <span className="field__label">Posição do texto do pico</span>
+              {posRows(dg.peakX, dg.peakY, (v) => setDg({ peakX: v }), (v) => setDg({ peakY: v }))}
+              {diaText('Texto da área destacada', dg.marker, (v) => setDg({ marker: v }), 'marker')}
+              <span className="field__label">Posição do texto da área</span>
+              {posRows(dg.markerX, dg.markerY, (v) => setDg({ markerX: v }), (v) => setDg({ markerY: v }))}
+              <p className="section__hint">Os textos têm posição própria — mover o destaque abaixo não os desloca mais.</p>
               <Field label={`Início do destaque: ${Math.round(dg.regionStart * 100)}%`}>
                 <input type="range" min={0} max={100} value={Math.round(dg.regionStart * 100)}
                   onChange={(e) => setDg({ regionStart: Number(e.target.value) / 100 })} />

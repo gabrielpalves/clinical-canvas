@@ -186,17 +186,18 @@ function Distribution({ c, mid }: { c: DiagramConfig; mid: string }) {
   const x0 = 110;
   const x1 = 640;
   const base = 400;
-  const peakY = 118;
+  const topY = 118;
   const xAt = (t: number) => x0 + t * (x1 - x0);
-  const yAt = (t: number) => base - (base - peakY) * Math.exp(-((t - 0.5) ** 2) / (2 * 0.0265));
-  const curve = `M${x0},${base} C 250,${base} 275,135 375,${peakY} C 475,135 ${x1 - 110},${base} ${x1},${base}`;
+  const yAt = (t: number) => base - (base - topY) * Math.exp(-((t - 0.5) ** 2) / (2 * 0.0265));
+  const curve = `M${x0},${base} C 250,${base} 275,135 375,${topY} C 475,135 ${x1 - 110},${base} ${x1},${base}`;
   const rs = Math.min(c.regionStart, c.regionEnd);
   const re = Math.max(c.regionStart, c.regionEnd);
   const partial = rs > 0.001 || re < 0.999;
-  const rcx = xAt((rs + re) / 2);
-  const markerY = Math.max(70, yAt((rs + re) / 2) - 30);
-  const mk = fitLines(c.marker, 260, 60);
-  const pk = fitLines(c.peak, 260, 60);
+  // labels are positioned freely across the plot area, independent of the region
+  const lx = (t: number) => 60 + t * 610;
+  const ly = (t: number) => 30 + t * 410;
+  const mk = fitLines(c.marker, 280, 60);
+  const pk = fitLines(c.peak, 280, 60);
   const xl = fitLines(c.xLabel, x1 - x0, 50);
   return (
     <svg viewBox="0 0 720 480" className="cc-dia" xmlns="http://www.w3.org/2000/svg">
@@ -210,24 +211,19 @@ function Distribution({ c, mid }: { c: DiagramConfig; mid: string }) {
       </defs>
       <path d={`${curve} L${x0},${base} Z`} className="cc-dia-area" fillOpacity="0.14" stroke="none" clipPath={`url(#${mid}-clip)`} />
       <path d={curve} className="cc-dia-line--accent" />
-      {partial ? (
+      {partial && (
         <>
           <line x1={xAt(rs)} y1={base} x2={xAt(rs)} y2={yAt(rs)} className="cc-dia-dash" />
           <line x1={xAt(re)} y1={base} x2={xAt(re)} y2={yAt(re)} className="cc-dia-dash" />
         </>
-      ) : (
-        <line x1={xAt(0.5)} y1={base} x2={xAt(0.5)} y2={peakY + 16} className="cc-dia-dash" />
-      )}
-      {/* peak label fixed at the top of the curve */}
-      <Lines x={xAt(0.5)} y={peakY - 26} lines={pk.lines} size={Math.min(26, pk.size) * S(c, 'peak')} className="cc-dia-label" rotate={Rot(c, 'peak')} />
-      {/* region label over the highlighted band */}
-      {partial && (
-        <Lines x={rcx} y={markerY} lines={mk.lines} size={Math.min(26, mk.size) * S(c, 'marker')} className="cc-dia-label" rotate={Rot(c, 'marker')} />
       )}
       <line x1={x0} y1={base} x2={x1 + 28} y2={base} className="cc-dia-line" markerEnd={`url(#${mid}-a)`} />
       <line x1={x0} y1={base} x2={x0} y2="72" className="cc-dia-line" markerEnd={`url(#${mid}-a)`} />
       <Lines x={(x0 + x1) / 2} y={450} lines={xl.lines} size={24 * S(c, 'xLabel')} className="cc-dia-axis" rotate={Rot(c, 'xLabel')} />
       <Lines x={52} y={236} lines={[c.yLabel]} size={24 * S(c, 'yLabel')} className="cc-dia-axis" rotate={-90 + Rot(c, 'yLabel')} />
+      {/* free-positioned labels (rendered last so they sit on top) */}
+      <Lines x={lx(c.peakX)} y={ly(c.peakY)} lines={pk.lines} size={Math.min(26, pk.size) * S(c, 'peak')} className="cc-dia-label" rotate={Rot(c, 'peak')} />
+      <Lines x={lx(c.markerX)} y={ly(c.markerY)} lines={mk.lines} size={Math.min(26, mk.size) * S(c, 'marker')} className="cc-dia-label" rotate={Rot(c, 'marker')} />
     </svg>
   );
 }
