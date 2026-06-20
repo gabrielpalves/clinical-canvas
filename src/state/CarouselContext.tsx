@@ -215,8 +215,12 @@ function normalize(c: Record<string, unknown>): Carousel {
     logoSrc: (c.logoSrc as string | null) ?? null,
     caption: (c.caption as string) ?? '',
     bands: (c.bands as Carousel['bands']) ?? [],
-    // `diagram` was added after some v2 carousels were saved
-    slides: carousel.slides.map((s) => ({ ...s, diagram: s.diagram ?? defaultDiagram() })),
+    // `diagram` was added after some v2 carousels were saved; merge defaults so
+    // diagrams persisted before newer options still get every field.
+    slides: carousel.slides.map((s) => ({
+      ...s,
+      diagram: { ...defaultDiagram(), ...(s.diagram ?? {}) },
+    })),
   };
 }
 

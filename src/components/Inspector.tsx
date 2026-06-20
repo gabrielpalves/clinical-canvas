@@ -14,6 +14,7 @@ import { LAYOUTS, LAYOUT_MAP } from '../designModes';
 import { bandForSlide, fileToDataUrl } from '../lib/helpers';
 import type {
   BackgroundStyle,
+  DiagramConfig,
   DiagramType,
   ElementAlign,
   ImagePlacement,
@@ -102,6 +103,9 @@ export function Inspector() {
   const usesEyebrow = fields.has('eyebrow');
   const c = slide.content;
   const img = slide.image;
+  const dg = slide.diagram;
+  const setDg = (patch: Partial<DiagramConfig>) =>
+    dispatch({ type: 'updateDiagram', id: slide.id, patch });
 
   const setContent = (patch: Partial<SlideContent>) =>
     dispatch({ type: 'updateContent', id: slide.id, patch });
@@ -364,83 +368,142 @@ export function Inspector() {
           <Field label="Tipo">
             <div className="seg seg--wrap">
               {DIAGRAM_TYPES.map((t) => (
-                <button key={t.id} className={`seg__btn${slide.diagram.type === t.id ? ' is-active' : ''}`}
-                  onClick={() => dispatch({ type: 'updateDiagram', id: slide.id, patch: { type: t.id } })}>
+                <button key={t.id} className={`seg__btn${dg.type === t.id ? ' is-active' : ''}`}
+                  onClick={() => setDg({ type: t.id })}>
                   {t.label}
                 </button>
               ))}
             </div>
           </Field>
+          <Field label={`Tamanho do texto: ${Math.round(dg.labelScale * 100)}%`}>
+            <input type="range" min={60} max={160} value={Math.round(dg.labelScale * 100)}
+              onChange={(e) => setDg({ labelScale: Number(e.target.value) / 100 })} />
+          </Field>
 
-          {slide.diagram.type === 'matrix' && (
+          {dg.type === 'matrix' && (
             <>
-              <Field label="Eixo horizontal (X)">
-                <input className="input" value={slide.diagram.xLabel}
-                  onChange={(e) => dispatch({ type: 'updateDiagram', id: slide.id, patch: { xLabel: e.target.value } })} />
-              </Field>
-              <Field label="Eixo vertical (Y)">
-                <input className="input" value={slide.diagram.yLabel}
-                  onChange={(e) => dispatch({ type: 'updateDiagram', id: slide.id, patch: { yLabel: e.target.value } })} />
-              </Field>
-              {(['Quadrante superior esq.', 'Quadrante superior dir.', 'Quadrante inferior esq.', 'Quadrante inferior dir.'] as const).map((label, i) => (
+              <label className="toggle">
+                <input type="checkbox" checked={dg.showAxes} onChange={(e) => setDg({ showAxes: e.target.checked })} />
+                <span>Mostrar eixos (desligado = tabela 2x2)</span>
+              </label>
+              {dg.showAxes && (
+                <>
+                  <Field label="Eixo horizontal (X)">
+                    <input className="input" value={dg.xLabel} onChange={(e) => setDg({ xLabel: e.target.value })} />
+                  </Field>
+                  <Field label="Eixo vertical (Y)">
+                    <input className="input" value={dg.yLabel} onChange={(e) => setDg({ yLabel: e.target.value })} />
+                  </Field>
+                </>
+              )}
+              {(['Sup. esquerda', 'Sup. direita', 'Inf. esquerda', 'Inf. direita'] as const).map((label, i) => (
                 <Field key={i} label={label}>
-                  <input className="input" value={slide.diagram.quadrants[i]}
+                  <input className="input" value={dg.quadrants[i]}
                     onChange={(e) => {
-                      const quadrants = [...slide.diagram.quadrants] as [string, string, string, string];
+                      const quadrants = [...dg.quadrants] as [string, string, string, string];
                       quadrants[i] = e.target.value;
-                      dispatch({ type: 'updateDiagram', id: slide.id, patch: { quadrants } });
+                      setDg({ quadrants });
                     }} />
                 </Field>
               ))}
             </>
           )}
 
-          {slide.diagram.type === 'venn' && (
+          {dg.type === 'venn' && (
             <>
-              <Field label="Conjunto A (esquerda)">
-                <input className="input" value={slide.diagram.setA}
-                  onChange={(e) => dispatch({ type: 'updateDiagram', id: slide.id, patch: { setA: e.target.value } })} />
+              <Field label="Número de círculos">
+                <div className="seg">
+                  {([2, 3] as const).map((n) => (
+                    <button key={n} className={`seg__btn${dg.vennCircles === n ? ' is-active' : ''}`}
+                      onClick={() => setDg({ vennCircles: n })}>
+                      {n} círculos
+                    </button>
+                  ))}
+                </div>
               </Field>
-              <Field label="Conjunto B (direita)">
-                <input className="input" value={slide.diagram.setB}
-                  onChange={(e) => dispatch({ type: 'updateDiagram', id: slide.id, patch: { setB: e.target.value } })} />
+              <Field label={`Tamanho dos círculos: ${Math.round(dg.circleScale * 100)}%`}>
+                <input type="range" min={70} max={130} value={Math.round(dg.circleScale * 100)}
+                  onChange={(e) => setDg({ circleScale: Number(e.target.value) / 100 })} />
               </Field>
+              {dg.vennCircles === 2 && (
+                <Field label={`Sobreposição: ${Math.round(dg.vennOverlap * 100)}%`}>
+                  <input type="range" min={0} max={100} value={Math.round(dg.vennOverlap * 100)}
+                    onChange={(e) => setDg({ vennOverlap: Number(e.target.value) / 100 })} />
+                </Field>
+              )}
+              <Field label="Conjunto A">
+                <input className="input" value={dg.setA} onChange={(e) => setDg({ setA: e.target.value })} />
+              </Field>
+              <Field label="Conjunto B">
+                <input className="input" value={dg.setB} onChange={(e) => setDg({ setB: e.target.value })} />
+              </Field>
+              {dg.vennCircles === 3 && (
+                <Field label="Conjunto C">
+                  <input className="input" value={dg.setC} onChange={(e) => setDg({ setC: e.target.value })} />
+                </Field>
+              )}
               <Field label="Interseção (centro)">
-                <input className="input" value={slide.diagram.overlap}
-                  onChange={(e) => dispatch({ type: 'updateDiagram', id: slide.id, patch: { overlap: e.target.value } })} />
+                <input className="input" value={dg.overlap} onChange={(e) => setDg({ overlap: e.target.value })} />
               </Field>
             </>
           )}
 
-          {slide.diagram.type === 'distribution' && (
+          {dg.type === 'distribution' && (
             <>
               <Field label="Eixo horizontal (X)">
-                <input className="input" value={slide.diagram.xLabel}
-                  onChange={(e) => dispatch({ type: 'updateDiagram', id: slide.id, patch: { xLabel: e.target.value } })} />
+                <input className="input" value={dg.xLabel} onChange={(e) => setDg({ xLabel: e.target.value })} />
               </Field>
               <Field label="Eixo vertical (Y)">
-                <input className="input" value={slide.diagram.yLabel}
-                  onChange={(e) => dispatch({ type: 'updateDiagram', id: slide.id, patch: { yLabel: e.target.value } })} />
+                <input className="input" value={dg.yLabel} onChange={(e) => setDg({ yLabel: e.target.value })} />
               </Field>
-              <Field label="Marcador do pico">
-                <input className="input" value={slide.diagram.marker}
-                  onChange={(e) => dispatch({ type: 'updateDiagram', id: slide.id, patch: { marker: e.target.value } })} />
+              <Field label="Texto sobre a área destacada">
+                <input className="input" value={dg.marker} onChange={(e) => setDg({ marker: e.target.value })} />
               </Field>
+              <Field label={`Início do destaque: ${Math.round(dg.regionStart * 100)}%`}>
+                <input type="range" min={0} max={100} value={Math.round(dg.regionStart * 100)}
+                  onChange={(e) => setDg({ regionStart: Number(e.target.value) / 100 })} />
+              </Field>
+              <Field label={`Fim do destaque: ${Math.round(dg.regionEnd * 100)}%`}>
+                <input type="range" min={0} max={100} value={Math.round(dg.regionEnd * 100)}
+                  onChange={(e) => setDg({ regionEnd: Number(e.target.value) / 100 })} />
+              </Field>
+              <p className="section__hint">Deixe em 0% → 100% para preencher toda a curva.</p>
             </>
           )}
 
-          {slide.diagram.type === 'cycle' && (
+          {dg.type === 'cycle' && (
             <>
-              {(['Nó 1 (topo)', 'Nó 2 (inferior dir.)', 'Nó 3 (inferior esq.)'] as const).map((label, i) => (
-                <Field key={i} label={label}>
-                  <input className="input" value={slide.diagram.nodes[i]}
-                    onChange={(e) => {
-                      const nodes = [...slide.diagram.nodes] as [string, string, string];
-                      nodes[i] = e.target.value;
-                      dispatch({ type: 'updateDiagram', id: slide.id, patch: { nodes } });
-                    }} />
-                </Field>
-              ))}
+              <Field label={`Tamanho dos círculos: ${Math.round(dg.circleScale * 100)}%`}>
+                <input type="range" min={70} max={130} value={Math.round(dg.circleScale * 100)}
+                  onChange={(e) => setDg({ circleScale: Number(e.target.value) / 100 })} />
+              </Field>
+              <div className="field">
+                <span className="field__label">Nós do ciclo (3 a 6)</span>
+                <div className="items">
+                  {dg.nodes.map((n, i) => (
+                    <div key={i} className="items__row">
+                      <span className="items__num">{i + 1}</span>
+                      <input className="input" value={n}
+                        onChange={(e) => {
+                          const nodes = [...dg.nodes];
+                          nodes[i] = e.target.value;
+                          setDg({ nodes });
+                        }} />
+                      {dg.nodes.length > 3 && (
+                        <button className="icon-btn icon-btn--danger" title="Remover nó"
+                          onClick={() => setDg({ nodes: dg.nodes.filter((_, j) => j !== i) })}>
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {dg.nodes.length < 6 && (
+                    <button className="btn btn--ghost btn--sm" onClick={() => setDg({ nodes: [...dg.nodes, 'Novo nó'] })}>
+                      <Plus size={14} /> Adicionar nó
+                    </button>
+                  )}
+                </div>
+              </div>
             </>
           )}
         </section>

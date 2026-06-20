@@ -65,13 +65,21 @@ export const SLIDE_STYLE_DEFAULTS: SlideStyleDefaults = {
 export function defaultDiagram(): DiagramConfig {
   return {
     type: 'matrix',
+    labelScale: 1,
     xLabel: 'Eixo horizontal',
     yLabel: 'Eixo vertical',
     quadrants: ['Alto / Baixo', 'Alto / Alto', 'Baixo / Baixo', 'Baixo / Alto'],
+    showAxes: true,
     setA: 'Conceito A',
     setB: 'Conceito B',
+    setC: 'Conceito C',
     overlap: 'Em comum',
+    vennCircles: 2,
+    vennOverlap: 0.45,
+    circleScale: 1,
     marker: 'Ponto ótimo',
+    regionStart: 0,
+    regionEnd: 1,
     nodes: ['Pensamentos', 'Emoções', 'Comportamentos'],
   };
 }

@@ -28,19 +28,37 @@ export type DiagramType = 'matrix' | 'venn' | 'distribution' | 'cycle';
 /** Data behind a diagram. Each type uses the subset of fields it needs. */
 export interface DiagramConfig {
   type: DiagramType;
-  /** matrix + distribution */
+  /** global multiplier applied to every label, 0.6–1.6. */
+  labelScale: number;
+
+  /* matrix + distribution */
   xLabel: string;
   yLabel: string;
   /** matrix quadrants: top-left, top-right, bottom-left, bottom-right */
   quadrants: [string, string, string, string];
-  /** venn */
+  /** matrix: show axes (off = a plain 2x2 table). */
+  showAxes: boolean;
+
+  /* venn */
   setA: string;
   setB: string;
+  setC: string;
   overlap: string;
-  /** distribution: label for the highlighted peak */
+  /** number of circles (2 or 3). */
+  vennCircles: 2 | 3;
+  /** how much the circles overlap, 0 (apart) … 1 (heavy). */
+  vennOverlap: number;
+  /** circle radius multiplier for venn + cycle, 0.7–1.3. */
+  circleScale: number;
+
+  /* distribution */
   marker: string;
-  /** cycle: the three nodes of the loop */
-  nodes: [string, string, string];
+  /** highlighted band under the curve, 0..1 along the x-axis. */
+  regionStart: number;
+  regionEnd: number;
+
+  /* cycle: 3–6 nodes of the loop */
+  nodes: string[];
 }
 
 export type TextAlign = 'left' | 'center' | 'right';
