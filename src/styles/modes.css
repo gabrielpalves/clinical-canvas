@@ -1,0 +1,484 @@
+/* ==========================================================================
+   Clinical Canvas — slide design system
+   Every slide is authored at full 1080px resolution and scaled for display.
+   All four modes share Laísa's brand fonts + palette and differ by tone.
+   ========================================================================== */
+
+.cc-frame {
+  --cc-serif: 'Cormorant Garamond', Georgia, serif;
+  --cc-sans: 'Montserrat', system-ui, sans-serif;
+
+  /* sensible defaults, overridden per data-mode below */
+  --cc-bg: #faf7f0;
+  --cc-bg-soft: #f2efe9;
+  --cc-accent: #bfa065;
+  --cc-accent-soft: #d4b985;
+  --cc-heading: #5d4037;
+  --cc-ink: #433430;
+  --cc-muted: #9a8c7e;
+  --cc-line: rgba(93, 64, 55, 0.18);
+  --cc-grain-opacity: 0;
+  --cc-radius: 0px;
+
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 96px;
+  background: var(--cc-bg);
+  color: var(--cc-ink);
+  font-family: var(--cc-sans);
+  -webkit-font-smoothing: antialiased;
+}
+.cc-frame * {
+  box-sizing: border-box;
+}
+
+/* ---- background variants ------------------------------------------------- */
+.cc-frame[data-bg='soft'] {
+  background: var(--cc-bg-soft);
+}
+.cc-frame[data-bg='gradient'] {
+  background:
+    radial-gradient(125% 115% at 82% 8%, var(--cc-accent-soft) 0%, transparent 42%),
+    linear-gradient(165deg, var(--cc-bg) 0%, var(--cc-bg-soft) 100%);
+}
+.cc-frame[data-bg='image'] {
+  background: var(--cc-bg-soft);
+}
+
+/* ==========================================================================
+   Mode palettes
+   ========================================================================== */
+.cc-frame[data-mode='earth-clinical'] {
+  --cc-bg: #faf7f0;
+  --cc-bg-soft: #f2efe9;
+  --cc-accent: #bfa065;
+  --cc-accent-soft: #e8dcc2;
+  --cc-heading: #5d4037;
+  --cc-ink: #433430;
+  --cc-muted: #9a8c7e;
+  --cc-line: rgba(93, 64, 55, 0.16);
+}
+
+.cc-frame[data-mode='narrative-compass'] {
+  --cc-bg: #f3efe7;
+  --cc-bg-soft: #ebe4d8;
+  --cc-accent: #682d36;
+  --cc-accent-soft: #e7d3c2;
+  --cc-heading: #682d36;
+  --cc-ink: #433430;
+  --cc-muted: #998878;
+  --cc-line: rgba(104, 45, 54, 0.18);
+}
+
+.cc-frame[data-mode='somatic-sanctuary'] {
+  --cc-bg: #efe9de;
+  --cc-bg-soft: #e7dfd0;
+  --cc-accent: #b89b74;
+  --cc-accent-soft: #ddd0ba;
+  --cc-heading: #6e5f4e;
+  --cc-ink: #4a4034;
+  --cc-muted: #a99e8c;
+  --cc-line: rgba(110, 95, 78, 0.16);
+  --cc-grain-opacity: 0.55;
+  --cc-radius: 10px;
+}
+
+.cc-frame[data-mode='minimalist-academic'] {
+  --cc-bg: #ffffff;
+  --cc-bg-soft: #f7f5f0;
+  --cc-accent: #bfa065;
+  --cc-accent-soft: #efe7d6;
+  --cc-heading: #2b2321;
+  --cc-ink: #2b2321;
+  --cc-muted: #8a8178;
+  --cc-line: rgba(43, 35, 33, 0.16);
+}
+
+/* ==========================================================================
+   Background accents (toggle: backgroundAccents) + grain
+   ========================================================================== */
+.cc-accents {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.cc-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--cc-grain-opacity);
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* earth-clinical: a thin gold inset frame */
+.cc-frame[data-mode='earth-clinical'] .cc-accents {
+  border: 1px solid var(--cc-accent);
+  margin: 44px;
+  inset: 0;
+  opacity: 0.55;
+}
+
+/* minimalist-academic: faint technical grid */
+.cc-frame[data-mode='minimalist-academic'] .cc-accents {
+  background-image:
+    linear-gradient(to right, var(--cc-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--cc-line) 1px, transparent 1px);
+  background-size: 90px 90px;
+  opacity: 0.6;
+}
+
+/* narrative-compass: a vertical wine bar at the left margin */
+.cc-frame[data-mode='narrative-compass'] .cc-accents::before {
+  content: '';
+  position: absolute;
+  top: 96px;
+  bottom: 96px;
+  left: 48px;
+  width: 4px;
+  background: var(--cc-accent);
+  opacity: 0.85;
+}
+
+/* somatic-sanctuary: two soft warm blooms */
+.cc-frame[data-mode='somatic-sanctuary'] .cc-accents {
+  background:
+    radial-gradient(380px 380px at 12% 14%, var(--cc-accent-soft) 0%, transparent 70%),
+    radial-gradient(460px 460px at 92% 90%, var(--cc-accent-soft) 0%, transparent 72%);
+  opacity: 0.7;
+  filter: blur(8px);
+}
+
+/* ==========================================================================
+   Panorama band (seamless image across slides)
+   ========================================================================== */
+.cc-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 0;
+}
+.cc-band[data-position='top'] {
+  top: 0;
+}
+.cc-band[data-position='bottom'] {
+  bottom: 0;
+}
+.cc-band[data-position='center'] {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.cc-band[data-position='full'] {
+  top: 0;
+  bottom: 0;
+}
+
+/* ==========================================================================
+   Decorative quotation mark (toggle: decorativeMark)
+   ========================================================================== */
+.cc-mark {
+  position: absolute;
+  top: 18px;
+  left: 60px;
+  font-family: var(--cc-serif);
+  font-size: 420px;
+  line-height: 1;
+  color: var(--cc-accent);
+  opacity: 0.12;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+}
+
+/* ==========================================================================
+   Content
+   ========================================================================== */
+.cc-content {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+.cc-frame[data-align='left'] .cc-content {
+  align-items: flex-start;
+  text-align: left;
+}
+.cc-frame[data-align='center'] .cc-content {
+  align-items: center;
+  text-align: center;
+}
+.cc-frame[data-layout='image'] .cc-content {
+  justify-content: stretch;
+}
+
+.cc-stack {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.cc-stack--image {
+  flex: 1;
+  min-height: 0;
+}
+
+.cc-eyebrow {
+  font-family: var(--cc-sans);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--cc-accent);
+  margin-bottom: 30px;
+}
+
+.cc-title {
+  font-family: var(--cc-serif);
+  font-weight: 600;
+  font-size: 78px;
+  line-height: 1.08;
+  color: var(--cc-heading);
+  margin: 0;
+}
+.cc-title--xl {
+  font-size: 108px;
+  line-height: 1.02;
+}
+.cc-title--lg {
+  font-size: 92px;
+}
+
+.cc-subtitle {
+  font-family: var(--cc-sans);
+  font-weight: 300;
+  font-size: 34px;
+  line-height: 1.5;
+  color: var(--cc-ink);
+  margin: 36px 0 0;
+  max-width: 80%;
+}
+.cc-frame[data-align='center'] .cc-subtitle {
+  max-width: 86%;
+}
+
+.cc-body {
+  font-family: var(--cc-sans);
+  font-weight: 300;
+  font-size: 37px;
+  line-height: 1.6;
+  color: var(--cc-ink);
+  margin-top: 32px;
+}
+.cc-body p {
+  margin: 0 0 28px;
+}
+.cc-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* list */
+.cc-list {
+  list-style: none;
+  margin: 28px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+}
+.cc-list__item {
+  display: flex;
+  gap: 36px;
+  align-items: baseline;
+}
+.cc-frame[data-align='center'] .cc-list__item {
+  justify-content: center;
+  text-align: left;
+}
+.cc-list__num {
+  font-family: var(--cc-serif);
+  font-weight: 500;
+  font-size: 58px;
+  line-height: 1;
+  color: var(--cc-accent);
+  min-width: 96px;
+}
+.cc-list__text {
+  font-family: var(--cc-sans);
+  font-weight: 400;
+  font-size: 37px;
+  line-height: 1.4;
+  color: var(--cc-ink);
+}
+
+/* quote */
+.cc-stack--quote {
+  max-width: 92%;
+}
+.cc-quote {
+  font-family: var(--cc-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 72px;
+  line-height: 1.28;
+  color: var(--cc-heading);
+  margin: 0;
+}
+.cc-cite {
+  font-family: var(--cc-sans);
+  font-style: normal;
+  font-weight: 500;
+  font-size: 28px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cc-accent);
+  margin-top: 48px;
+}
+
+/* statistic */
+.cc-stat {
+  font-family: var(--cc-serif);
+  font-weight: 600;
+  font-size: 210px;
+  line-height: 0.9;
+  color: var(--cc-accent);
+}
+.cc-stat__label {
+  font-family: var(--cc-serif);
+  font-style: italic;
+  font-size: 44px;
+  line-height: 1.25;
+  color: var(--cc-heading);
+  margin-top: 20px;
+  max-width: 78%;
+}
+.cc-stack--stat .cc-body {
+  font-size: 32px;
+  margin-top: 36px;
+  max-width: 82%;
+}
+
+/* image */
+.cc-imagewrap {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--cc-radius);
+  background: var(--cc-bg-soft);
+}
+.cc-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+.cc-image[data-fit='contain'] {
+  object-fit: contain;
+}
+.cc-image--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--cc-sans);
+  font-size: 30px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cc-muted);
+  border: 2px dashed var(--cc-line);
+}
+.cc-caption {
+  margin-top: 34px;
+}
+.cc-caption__title {
+  font-family: var(--cc-serif);
+  font-weight: 600;
+  font-size: 46px;
+  line-height: 1.1;
+  color: var(--cc-heading);
+  margin: 0;
+}
+.cc-caption__body {
+  font-family: var(--cc-sans);
+  font-weight: 300;
+  font-size: 30px;
+  line-height: 1.5;
+  color: var(--cc-ink);
+  margin: 16px 0 0;
+}
+
+/* cta */
+.cc-stack--cta .cc-rule {
+  display: block;
+  width: 120px;
+  height: 3px;
+  background: var(--cc-accent);
+  margin: 44px 0;
+}
+.cc-frame[data-align='center'] .cc-stack--cta .cc-rule {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ==========================================================================
+   Reference + footer
+   ========================================================================== */
+.cc-ref {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 18px;
+  align-items: baseline;
+  border-left: 3px solid var(--cc-accent);
+  padding-left: 22px;
+  margin-bottom: 30px;
+  font-family: var(--cc-sans);
+  font-size: 23px;
+  font-weight: 300;
+  line-height: 1.4;
+  color: var(--cc-muted);
+}
+.cc-ref__tag {
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--cc-accent);
+}
+
+.cc-footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  border-top: 1px solid var(--cc-line);
+  padding-top: 30px;
+  font-family: var(--cc-sans);
+  font-size: 24px;
+}
+.cc-brand {
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--cc-muted);
+}
+.cc-footer__right {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.cc-handle {
+  font-weight: 500;
+  color: var(--cc-accent);
+}
+.cc-page {
+  font-weight: 400;
+  color: var(--cc-muted);
+  font-variant-numeric: tabular-nums;
+}
