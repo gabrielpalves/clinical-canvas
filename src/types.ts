@@ -23,13 +23,19 @@ export type LayoutId =
   | 'cta';
 
 /** The clean vector figures available on a `diagram` slide. */
-export type DiagramType = 'matrix' | 'venn' | 'distribution' | 'cycle';
+export type DiagramType = 'matrix' | 'venn' | 'distribution' | 'cycle' | 'table';
 
-/** Data behind a diagram. Each type uses the subset of fields it needs. */
+/**
+ * Data behind a diagram. Each type uses the subset of fields it needs.
+ * `labelSizes` holds a per-element size multiplier keyed by element id
+ * (e.g. 'setA', 'q0', 'n2', 'xLabel'); missing keys default to 1.
+ */
 export interface DiagramConfig {
   type: DiagramType;
-  /** global multiplier applied to every label, 0.6–1.6. */
-  labelScale: number;
+  /** per-element text size multipliers, applied on top of auto-fit. */
+  labelSizes: Record<string, number>;
+  /** per-element text rotation in degrees, keyed like labelSizes. */
+  labelRots: Record<string, number>;
 
   /* matrix + distribution */
   xLabel: string;
@@ -52,13 +58,54 @@ export interface DiagramConfig {
   circleScale: number;
 
   /* distribution */
+  /** label over the highlighted region. */
   marker: string;
+  /** label fixed at the curve's peak. */
+  peak: string;
   /** highlighted band under the curve, 0..1 along the x-axis. */
   regionStart: number;
   regionEnd: number;
 
   /* cycle: 3–6 nodes of the loop */
   nodes: string[];
+
+  /* table */
+  rows: number;
+  cols: number;
+  /** first row is a styled header. */
+  header: boolean;
+  /** row-major cell contents, length rows*cols. */
+  cells: string[];
+}
+
+/** A decorative shape that can be dropped onto a slide. */
+export type DecorationKind =
+  | 'blobA'
+  | 'blobB'
+  | 'circle'
+  | 'ring'
+  | 'triangle'
+  | 'line'
+  | 'arrow'
+  | 'plus'
+  | 'asterisk'
+  | 'leaf';
+
+export interface Decoration {
+  id: string;
+  kind: DecorationKind;
+  /** center position, 0..1 of the slide. */
+  x: number;
+  y: number;
+  /** size relative to the slide width, ~0.05..0.7. */
+  size: number;
+  rotation: number;
+  opacity: number;
+  color: 'accent' | 'heading' | 'muted';
+  /** filled vs. outline (ignored by line/arrow). */
+  filled: boolean;
+  /** render in front of the text instead of behind it. */
+  front: boolean;
 }
 
 export type TextAlign = 'left' | 'center' | 'right';
@@ -148,6 +195,8 @@ export interface Slide {
   image: SlideImage | null;
   /** figure shown when layout === 'diagram'. */
   diagram: DiagramConfig;
+  /** decorative shapes layered on the slide. */
+  decorations: Decoration[];
   /** per-element overrides. */
   eyebrowAlign: ElementAlign;
   eyebrowPlacement: EyebrowPlacement;

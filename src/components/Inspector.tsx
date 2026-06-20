@@ -14,6 +14,7 @@ import { LAYOUTS, LAYOUT_MAP } from '../designModes';
 import { bandForSlide, fileToDataUrl } from '../lib/helpers';
 import type {
   BackgroundStyle,
+  DecorationKind,
   DiagramConfig,
   DiagramType,
   ElementAlign,
@@ -25,7 +26,8 @@ import type {
   TextAlign,
   VerticalAnchor,
 } from '../types';
-import { defaultImage, uid } from '../state/factory';
+import { defaultDecoration, defaultImage, uid } from '../state/factory';
+import { DecorationEditor } from './DecorationEditor';
 
 const BACKGROUNDS: Array<{ id: BackgroundStyle; label: string }> = [
   { id: 'solid', label: 'Sólido' },
@@ -58,6 +60,20 @@ const DIAGRAM_TYPES: Array<{ id: DiagramType; label: string }> = [
   { id: 'venn', label: 'Venn' },
   { id: 'distribution', label: 'Distribuição' },
   { id: 'cycle', label: 'Ciclo' },
+  { id: 'table', label: 'Tabela' },
+];
+
+const DECORATIONS: Array<{ id: DecorationKind; label: string }> = [
+  { id: 'blobA', label: 'Forma 1' },
+  { id: 'blobB', label: 'Forma 2' },
+  { id: 'leaf', label: 'Folha' },
+  { id: 'circle', label: 'Círculo' },
+  { id: 'ring', label: 'Anel' },
+  { id: 'triangle', label: 'Triângulo' },
+  { id: 'line', label: 'Linha' },
+  { id: 'arrow', label: 'Seta' },
+  { id: 'plus', label: 'Cruz' },
+  { id: 'asterisk', label: 'Asterisco' },
 ];
 
 const EYEBROW_ALIGNS: Array<{ id: ElementAlign; label: string }> = [
@@ -106,6 +122,38 @@ export function Inspector() {
   const dg = slide.diagram;
   const setDg = (patch: Partial<DiagramConfig>) =>
     dispatch({ type: 'updateDiagram', id: slide.id, patch });
+  const sz = (k: string) => dg.labelSizes[k] ?? 1;
+  const setSize = (k: string, v: number) =>
+    setDg({ labelSizes: { ...dg.labelSizes, [k]: v } });
+  const rot = (k: string) => dg.labelRots[k] ?? 0;
+  const setRot = (k: string, v: number) =>
+    setDg({ labelRots: { ...dg.labelRots, [k]: v } });
+
+  const sizeRow = (key: string) => (
+    <>
+      <div className="size-row">
+        <span className="size-row__icon">A</span>
+        <input type="range" min={50} max={220} value={Math.round(sz(key) * 100)}
+          onChange={(e) => setSize(key, Number(e.target.value) / 100)} />
+        <span className="size-row__val">{Math.round(sz(key) * 100)}%</span>
+      </div>
+      <div className="size-row">
+        <span className="size-row__icon">⟳</span>
+        <input type="range" min={-90} max={90} value={Math.round(rot(key))}
+          onChange={(e) => setRot(key, Number(e.target.value))} />
+        <span className="size-row__val">{Math.round(rot(key))}°</span>
+      </div>
+    </>
+  );
+
+  /** a diagram text input paired with its own size + rotation sliders */
+  const diaText = (label: string, value: string, onChange: (v: string) => void, sizeKey: string) => (
+    <div className="field">
+      <span className="field__label">{label}</span>
+      <input className="input" value={value} onChange={(e) => onChange(e.target.value)} />
+      {sizeRow(sizeKey)}
+    </div>
+  );
 
   const setContent = (patch: Partial<SlideContent>) =>
     dispatch({ type: 'updateContent', id: slide.id, patch });
@@ -375,10 +423,7 @@ export function Inspector() {
               ))}
             </div>
           </Field>
-          <Field label={`Tamanho do texto: ${Math.round(dg.labelScale * 100)}%`}>
-            <input type="range" min={60} max={160} value={Math.round(dg.labelScale * 100)}
-              onChange={(e) => setDg({ labelScale: Number(e.target.value) / 100 })} />
-          </Field>
+          <p className="section__hint">Cada texto tem sua própria barra de tamanho (A).</p>
 
           {dg.type === 'matrix' && (
             <>
@@ -388,24 +433,17 @@ export function Inspector() {
               </label>
               {dg.showAxes && (
                 <>
-                  <Field label="Eixo horizontal (X)">
-                    <input className="input" value={dg.xLabel} onChange={(e) => setDg({ xLabel: e.target.value })} />
-                  </Field>
-                  <Field label="Eixo vertical (Y)">
-                    <input className="input" value={dg.yLabel} onChange={(e) => setDg({ yLabel: e.target.value })} />
-                  </Field>
+                  {diaText('Eixo horizontal (X)', dg.xLabel, (v) => setDg({ xLabel: v }), 'xLabel')}
+                  {diaText('Eixo vertical (Y)', dg.yLabel, (v) => setDg({ yLabel: v }), 'yLabel')}
                 </>
               )}
-              {(['Sup. esquerda', 'Sup. direita', 'Inf. esquerda', 'Inf. direita'] as const).map((label, i) => (
-                <Field key={i} label={label}>
-                  <input className="input" value={dg.quadrants[i]}
-                    onChange={(e) => {
-                      const quadrants = [...dg.quadrants] as [string, string, string, string];
-                      quadrants[i] = e.target.value;
-                      setDg({ quadrants });
-                    }} />
-                </Field>
-              ))}
+              {(['Sup. esquerda', 'Sup. direita', 'Inf. esquerda', 'Inf. direita'] as const).map((label, i) =>
+                diaText(label, dg.quadrants[i], (v) => {
+                  const quadrants = [...dg.quadrants] as [string, string, string, string];
+                  quadrants[i] = v;
+                  setDg({ quadrants });
+                }, `q${i}`),
+              )}
             </>
           )}
 
@@ -431,34 +469,19 @@ export function Inspector() {
                     onChange={(e) => setDg({ vennOverlap: Number(e.target.value) / 100 })} />
                 </Field>
               )}
-              <Field label="Conjunto A">
-                <input className="input" value={dg.setA} onChange={(e) => setDg({ setA: e.target.value })} />
-              </Field>
-              <Field label="Conjunto B">
-                <input className="input" value={dg.setB} onChange={(e) => setDg({ setB: e.target.value })} />
-              </Field>
-              {dg.vennCircles === 3 && (
-                <Field label="Conjunto C">
-                  <input className="input" value={dg.setC} onChange={(e) => setDg({ setC: e.target.value })} />
-                </Field>
-              )}
-              <Field label="Interseção (centro)">
-                <input className="input" value={dg.overlap} onChange={(e) => setDg({ overlap: e.target.value })} />
-              </Field>
+              {diaText('Conjunto A', dg.setA, (v) => setDg({ setA: v }), 'setA')}
+              {diaText('Conjunto B', dg.setB, (v) => setDg({ setB: v }), 'setB')}
+              {dg.vennCircles === 3 && diaText('Conjunto C', dg.setC, (v) => setDg({ setC: v }), 'setC')}
+              {diaText('Interseção (centro)', dg.overlap, (v) => setDg({ overlap: v }), 'overlap')}
             </>
           )}
 
           {dg.type === 'distribution' && (
             <>
-              <Field label="Eixo horizontal (X)">
-                <input className="input" value={dg.xLabel} onChange={(e) => setDg({ xLabel: e.target.value })} />
-              </Field>
-              <Field label="Eixo vertical (Y)">
-                <input className="input" value={dg.yLabel} onChange={(e) => setDg({ yLabel: e.target.value })} />
-              </Field>
-              <Field label="Texto sobre a área destacada">
-                <input className="input" value={dg.marker} onChange={(e) => setDg({ marker: e.target.value })} />
-              </Field>
+              {diaText('Eixo horizontal (X)', dg.xLabel, (v) => setDg({ xLabel: v }), 'xLabel')}
+              {diaText('Eixo vertical (Y)', dg.yLabel, (v) => setDg({ yLabel: v }), 'yLabel')}
+              {diaText('Texto do pico (fixo)', dg.peak, (v) => setDg({ peak: v }), 'peak')}
+              {diaText('Texto sobre a área destacada', dg.marker, (v) => setDg({ marker: v }), 'marker')}
               <Field label={`Início do destaque: ${Math.round(dg.regionStart * 100)}%`}>
                 <input type="range" min={0} max={100} value={Math.round(dg.regionStart * 100)}
                   onChange={(e) => setDg({ regionStart: Number(e.target.value) / 100 })} />
@@ -477,37 +500,95 @@ export function Inspector() {
                 <input type="range" min={70} max={130} value={Math.round(dg.circleScale * 100)}
                   onChange={(e) => setDg({ circleScale: Number(e.target.value) / 100 })} />
               </Field>
+              <span className="field__label">Nós do ciclo (3 a 6)</span>
+              {dg.nodes.map((n, i) => (
+                <div className="dia-node" key={i}>
+                  <div className="items__row">
+                    <span className="items__num">{i + 1}</span>
+                    <input className="input" value={n}
+                      onChange={(e) => {
+                        const nodes = [...dg.nodes];
+                        nodes[i] = e.target.value;
+                        setDg({ nodes });
+                      }} />
+                    {dg.nodes.length > 3 && (
+                      <button className="icon-btn icon-btn--danger" title="Remover nó"
+                        onClick={() => setDg({ nodes: dg.nodes.filter((_, j) => j !== i) })}>
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+                  {sizeRow(`n${i}`)}
+                </div>
+              ))}
+              {dg.nodes.length < 6 && (
+                <button className="btn btn--ghost btn--sm" onClick={() => setDg({ nodes: [...dg.nodes, 'Novo nó'] })}>
+                  <Plus size={14} /> Adicionar nó
+                </button>
+              )}
+            </>
+          )}
+
+          {dg.type === 'table' && (
+            <>
+              <div className="seg-pair">
+                <Field label={`Linhas: ${dg.rows}`}>
+                  <div className="seg">
+                    <button className="seg__btn" disabled={dg.rows <= 1} onClick={() => setDg({ rows: dg.rows - 1 })}>−</button>
+                    <button className="seg__btn" disabled={dg.rows >= 8} onClick={() => setDg({ rows: dg.rows + 1 })}>+</button>
+                  </div>
+                </Field>
+                <Field label={`Colunas: ${dg.cols}`}>
+                  <div className="seg">
+                    <button className="seg__btn" disabled={dg.cols <= 1} onClick={() => setDg({ cols: dg.cols - 1 })}>−</button>
+                    <button className="seg__btn" disabled={dg.cols >= 5} onClick={() => setDg({ cols: dg.cols + 1 })}>+</button>
+                  </div>
+                </Field>
+              </div>
+              <label className="toggle">
+                <input type="checkbox" checked={dg.header} onChange={(e) => setDg({ header: e.target.checked })} />
+                <span>Primeira linha como cabeçalho</span>
+              </label>
+              <Field label={`Tamanho do texto: ${Math.round(sz('table') * 100)}%`}>
+                <input type="range" min={50} max={200} value={Math.round(sz('table') * 100)}
+                  onChange={(e) => setSize('table', Number(e.target.value) / 100)} />
+              </Field>
               <div className="field">
-                <span className="field__label">Nós do ciclo (3 a 6)</span>
-                <div className="items">
-                  {dg.nodes.map((n, i) => (
-                    <div key={i} className="items__row">
-                      <span className="items__num">{i + 1}</span>
-                      <input className="input" value={n}
-                        onChange={(e) => {
-                          const nodes = [...dg.nodes];
-                          nodes[i] = e.target.value;
-                          setDg({ nodes });
-                        }} />
-                      {dg.nodes.length > 3 && (
-                        <button className="icon-btn icon-btn--danger" title="Remover nó"
-                          onClick={() => setDg({ nodes: dg.nodes.filter((_, j) => j !== i) })}>
-                          <X size={14} />
-                        </button>
-                      )}
-                    </div>
+                <span className="field__label">Células</span>
+                <div className="dia-table" style={{ gridTemplateColumns: `repeat(${dg.cols}, 1fr)` }}>
+                  {Array.from({ length: dg.rows * dg.cols }).map((_, idx) => (
+                    <input key={idx} className="input input--cell" value={dg.cells[idx] ?? ''}
+                      onChange={(e) => {
+                        const cells = Array.from({ length: dg.rows * dg.cols }, (_, k) => dg.cells[k] ?? '');
+                        cells[idx] = e.target.value;
+                        setDg({ cells });
+                      }} />
                   ))}
-                  {dg.nodes.length < 6 && (
-                    <button className="btn btn--ghost btn--sm" onClick={() => setDg({ nodes: [...dg.nodes, 'Novo nó'] })}>
-                      <Plus size={14} /> Adicionar nó
-                    </button>
-                  )}
                 </div>
               </div>
             </>
           )}
         </section>
       )}
+
+      {/* decorative shapes */}
+      <section className="inspector__section">
+        <h3 className="section__title">Formas decorativas</h3>
+        <p className="section__hint">Blobs e formas para enfeitar o slide. Ajuste posição, tamanho, cor e camada.</p>
+        <div className="chip-row">
+          {DECORATIONS.map((deco) => (
+            <button key={deco.id} className="chip"
+              onClick={() => dispatch({ type: 'addDecoration', id: slide.id, decoration: defaultDecoration(deco.id) })}>
+              + {deco.label}
+            </button>
+          ))}
+        </div>
+        {slide.decorations.map((d, i) => (
+          <DecorationEditor key={d.id} d={d} index={i}
+            onChange={(patch) => dispatch({ type: 'updateDecoration', id: slide.id, decoId: d.id, patch })}
+            onRemove={() => dispatch({ type: 'removeDecoration', id: slide.id, decoId: d.id })} />
+        ))}
+      </section>
 
       {/* image */}
       <section className="inspector__section">

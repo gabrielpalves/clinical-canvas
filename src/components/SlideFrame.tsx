@@ -3,6 +3,7 @@ import type { Carousel, Slide } from '../types';
 import { LAYOUT_MAP } from '../designModes';
 import { DIMENSIONS, bandForSlide } from '../lib/helpers';
 import { Diagram } from './Diagram';
+import { Decorations } from './Decorations';
 
 interface Props {
   slide: Slide;
@@ -183,6 +184,13 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
 
       <PanoramaLayer slide={slide} carousel={carousel} />
 
+      <Decorations
+        decorations={slide.decorations.filter((d) => !d.front)}
+        w={w}
+        h={h}
+        className="cc-decos cc-decos--back"
+      />
+
       {showMark && (
         <span className="cc-mark" aria-hidden>
           &#8220;
@@ -245,6 +253,13 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
           )}
         </span>
       </footer>
+
+      <Decorations
+        decorations={slide.decorations.filter((d) => d.front)}
+        w={w}
+        h={h}
+        className="cc-decos cc-decos--front"
+      />
     </div>
   );
 }

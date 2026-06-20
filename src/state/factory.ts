@@ -1,6 +1,7 @@
 import type {
   BackgroundStyle,
   Carousel,
+  Decoration,
   DiagramConfig,
   ElementAlign,
   EyebrowPlacement,
@@ -65,7 +66,8 @@ export const SLIDE_STYLE_DEFAULTS: SlideStyleDefaults = {
 export function defaultDiagram(): DiagramConfig {
   return {
     type: 'matrix',
-    labelScale: 1,
+    labelSizes: {},
+    labelRots: {},
     xLabel: 'Eixo horizontal',
     yLabel: 'Eixo vertical',
     quadrants: ['Alto / Baixo', 'Alto / Alto', 'Baixo / Baixo', 'Baixo / Alto'],
@@ -77,10 +79,30 @@ export function defaultDiagram(): DiagramConfig {
     vennCircles: 2,
     vennOverlap: 0.45,
     circleScale: 1,
-    marker: 'Ponto ótimo',
+    marker: 'Área de destaque',
+    peak: 'Pico',
     regionStart: 0,
     regionEnd: 1,
     nodes: ['Pensamentos', 'Emoções', 'Comportamentos'],
+    rows: 3,
+    cols: 2,
+    header: true,
+    cells: ['Coluna A', 'Coluna B', 'Linha 1', 'Valor', 'Linha 2', 'Valor'],
+  };
+}
+
+export function defaultDecoration(kind: Decoration['kind']): Decoration {
+  return {
+    id: uid(),
+    kind,
+    x: 0.5,
+    y: 0.5,
+    size: 0.28,
+    rotation: 0,
+    opacity: kind === 'blobA' || kind === 'blobB' ? 0.18 : 0.5,
+    color: 'accent',
+    filled: kind === 'blobA' || kind === 'blobB' || kind === 'circle' || kind === 'triangle',
+    front: false,
   };
 }
 
@@ -120,6 +142,7 @@ export function createSlide(seed: SlideSeed): Slide {
     background: seed.background ?? SLIDE_STYLE_DEFAULTS.background,
     image: seed.image ?? null,
     diagram: { ...defaultDiagram(), ...seed.diagram },
+    decorations: [],
     eyebrowAlign: seed.eyebrowAlign ?? SLIDE_STYLE_DEFAULTS.eyebrowAlign,
     eyebrowPlacement: seed.eyebrowPlacement ?? SLIDE_STYLE_DEFAULTS.eyebrowPlacement,
     content: { ...emptyContent(), ...seed.content },

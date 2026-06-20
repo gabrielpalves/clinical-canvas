@@ -10,6 +10,7 @@ import {
 import type {
   AspectId,
   Carousel,
+  Decoration,
   DesignModeId,
   DiagramConfig,
   LayoutId,
@@ -59,6 +60,9 @@ type Action =
   | { type: 'setImage'; id: string; image: SlideImage | null }
   | { type: 'updateImage'; id: string; patch: Partial<SlideImage> }
   | { type: 'updateDiagram'; id: string; patch: Partial<DiagramConfig> }
+  | { type: 'addDecoration'; id: string; decoration: Decoration }
+  | { type: 'updateDecoration'; id: string; decoId: string; patch: Partial<Decoration> }
+  | { type: 'removeDecoration'; id: string; decoId: string }
   | { type: 'resetSlide'; id: string }
   | { type: 'addBand'; band: PanoramaBand }
   | { type: 'updateBand'; id: string; patch: Partial<PanoramaBand> }
@@ -145,11 +149,29 @@ function reducer(state: Carousel, action: Action): Carousel {
         ...s,
         diagram: { ...s.diagram, ...action.patch },
       }));
+    case 'addDecoration':
+      return mapSlide(state, action.id, (s) => ({
+        ...s,
+        decorations: [...s.decorations, action.decoration],
+      }));
+    case 'updateDecoration':
+      return mapSlide(state, action.id, (s) => ({
+        ...s,
+        decorations: s.decorations.map((d) =>
+          d.id === action.decoId ? { ...d, ...action.patch } : d,
+        ),
+      }));
+    case 'removeDecoration':
+      return mapSlide(state, action.id, (s) => ({
+        ...s,
+        decorations: s.decorations.filter((d) => d.id !== action.decoId),
+      }));
     case 'resetSlide':
       return mapSlide(state, action.id, (s) => ({
         ...s,
         ...SLIDE_STYLE_DEFAULTS,
         image: null,
+        decorations: [],
         layers: defaultLayers(),
       }));
     case 'addBand':
@@ -188,6 +210,7 @@ function migrateToV2(old: Record<string, unknown>): Carousel {
       background,
       image,
       diagram: defaultDiagram(),
+      decorations: [],
       eyebrowAlign: SLIDE_STYLE_DEFAULTS.eyebrowAlign,
       eyebrowPlacement: SLIDE_STYLE_DEFAULTS.eyebrowPlacement,
       content: { ...emptyContent(), ...content },
@@ -215,11 +238,12 @@ function normalize(c: Record<string, unknown>): Carousel {
     logoSrc: (c.logoSrc as string | null) ?? null,
     caption: (c.caption as string) ?? '',
     bands: (c.bands as Carousel['bands']) ?? [],
-    // `diagram` was added after some v2 carousels were saved; merge defaults so
-    // diagrams persisted before newer options still get every field.
+    // `diagram`/`decorations` were added after some v2 carousels were saved;
+    // merge defaults so saves made before newer options still get every field.
     slides: carousel.slides.map((s) => ({
       ...s,
       diagram: { ...defaultDiagram(), ...(s.diagram ?? {}) },
+      decorations: s.decorations ?? [],
     })),
   };
 }

@@ -565,6 +565,79 @@ input[type='range'] {
   accent-color: var(--gold);
 }
 
+/* per-element size / rotation rows in the diagram editor */
+.size-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.size-row__icon {
+  width: 16px;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+.size-row__icon--wide {
+  width: 64px;
+  text-align: left;
+  font-size: 11px;
+}
+.size-row__val {
+  width: 40px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.dia-node {
+  margin-bottom: 12px;
+}
+.seg-pair {
+  display: flex;
+  gap: 12px;
+}
+.seg-pair .field {
+  flex: 1;
+}
+.dia-table {
+  display: grid;
+  gap: 4px;
+}
+.input--cell {
+  padding: 6px 8px;
+  font-size: 12.5px;
+}
+
+/* decoration cards */
+.deco-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-top: 12px;
+  background: var(--panel-2);
+}
+.deco-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.deco-card__title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--brown);
+}
+.deco-card__toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+}
+
 /* ---- preview modal ------------------------------------------------------- */
 .preview {
   position: fixed;
