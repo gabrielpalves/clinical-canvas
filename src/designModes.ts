@@ -51,7 +51,7 @@ export interface LayoutMeta {
   description: string;
   /** which content fields this layout actually renders. */
   fields: Array<
-    'eyebrow' | 'title' | 'subtitle' | 'body' | 'items' | 'quote' | 'author' | 'stat' | 'statLabel' | 'image'
+    'eyebrow' | 'title' | 'subtitle' | 'body' | 'items' | 'quote' | 'author' | 'stat' | 'statLabel'
   >;
 }
 
@@ -87,10 +87,10 @@ export const LAYOUTS: LayoutMeta[] = [
     fields: ['eyebrow', 'stat', 'statLabel', 'body'],
   },
   {
-    id: 'image',
-    name: 'Imagem',
-    description: 'Imagem em destaque com legenda opcional.',
-    fields: ['image', 'title', 'body'],
+    id: 'diagram',
+    name: 'Diagrama',
+    description: 'Figura limpa: matriz 2x2, Venn, distribuição ou ciclo.',
+    fields: ['eyebrow', 'title'],
   },
   {
     id: 'cta',

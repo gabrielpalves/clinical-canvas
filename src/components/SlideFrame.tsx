@@ -1,6 +1,8 @@
 import { Fragment } from 'react';
 import type { Carousel, Slide } from '../types';
+import { LAYOUT_MAP } from '../designModes';
 import { DIMENSIONS, bandForSlide } from '../lib/helpers';
+import { Diagram } from './Diagram';
 
 interface Props {
   slide: Slide;
@@ -10,28 +12,25 @@ interface Props {
 }
 
 /** Render a body string as paragraphs, preserving blank-line breaks. */
-function Paragraphs({ text, className }: { text: string; className?: string }) {
+function Paragraphs({ text }: { text: string }) {
   const parts = text.split(/\n{1,}/).filter((p) => p.trim().length > 0);
   return (
     <>
       {parts.map((p, i) => (
-        <p key={i} className={className}>
-          {p}
-        </p>
+        <p key={i}>{p}</p>
       ))}
     </>
   );
 }
 
+/** Everything in a slide except the eyebrow (which is positioned separately). */
 function LayoutBody({ slide }: { slide: Slide }) {
   const c = slide.content;
-  const showEyebrow = slide.layers.eyebrow && c.eyebrow.trim().length > 0;
 
   switch (slide.layout) {
     case 'cover':
       return (
         <div className="cc-stack cc-stack--cover">
-          {showEyebrow && <span className="cc-eyebrow">{c.eyebrow}</span>}
           <h1 className="cc-title cc-title--xl">{c.title}</h1>
           {c.subtitle && <p className="cc-subtitle">{c.subtitle}</p>}
         </div>
@@ -40,7 +39,6 @@ function LayoutBody({ slide }: { slide: Slide }) {
     case 'text':
       return (
         <div className="cc-stack">
-          {showEyebrow && <span className="cc-eyebrow">{c.eyebrow}</span>}
           {c.title && <h2 className="cc-title">{c.title}</h2>}
           <div className="cc-body">
             <Paragraphs text={c.body} />
@@ -51,7 +49,6 @@ function LayoutBody({ slide }: { slide: Slide }) {
     case 'list':
       return (
         <div className="cc-stack">
-          {showEyebrow && <span className="cc-eyebrow">{c.eyebrow}</span>}
           {c.title && <h2 className="cc-title">{c.title}</h2>}
           <ol className="cc-list">
             {c.items.map((item, i) => (
@@ -75,7 +72,6 @@ function LayoutBody({ slide }: { slide: Slide }) {
     case 'statistic':
       return (
         <div className="cc-stack cc-stack--stat">
-          {showEyebrow && <span className="cc-eyebrow">{c.eyebrow}</span>}
           <span className="cc-stat">{c.stat}</span>
           {c.statLabel && <span className="cc-stat__label">{c.statLabel}</span>}
           {c.body && (
@@ -86,29 +82,19 @@ function LayoutBody({ slide }: { slide: Slide }) {
         </div>
       );
 
-    case 'image':
+    case 'diagram':
       return (
-        <div className="cc-stack cc-stack--image">
-          <div className="cc-imagewrap" data-fit={c.imageFit}>
-            {c.imageSrc ? (
-              <img className="cc-image" src={c.imageSrc} alt="" data-fit={c.imageFit} />
-            ) : (
-              <div className="cc-image cc-image--placeholder">Adicione uma imagem</div>
-            )}
+        <div className="cc-stack cc-stack--diagram">
+          {c.title && <h2 className="cc-title cc-title--sm">{c.title}</h2>}
+          <div className="cc-diagram">
+            <Diagram config={slide.diagram} />
           </div>
-          {(c.title || c.body) && (
-            <div className="cc-caption">
-              {c.title && <h3 className="cc-caption__title">{c.title}</h3>}
-              {c.body && <p className="cc-caption__body">{c.body}</p>}
-            </div>
-          )}
         </div>
       );
 
     case 'cta':
       return (
         <div className="cc-stack cc-stack--cta">
-          {showEyebrow && <span className="cc-eyebrow">{c.eyebrow}</span>}
           <h2 className="cc-title cc-title--lg">{c.title}</h2>
           <span className="cc-rule" />
           {c.subtitle && <p className="cc-subtitle">{c.subtitle}</p>}
@@ -144,9 +130,24 @@ function PanoramaLayer({ slide, carousel }: { slide: Slide; carousel: Carousel }
 export function SlideFrame({ slide, carousel, index, total }: Props) {
   const { w, h } = DIMENSIONS[carousel.aspect];
   const L = slide.layers;
-  const showRef = L.reference && slide.content.reference.trim().length > 0;
+  const c = slide.content;
+  const img = slide.image;
+  const placement = img?.placement ?? 'none';
+
+  const showRef = L.reference && c.reference.trim().length > 0;
   const showMark =
     L.decorativeMark && (slide.layout === 'quote' || slide.layout === 'text' || slide.layout === 'cover');
+  const usesEyebrow = LAYOUT_MAP[slide.layout].fields.includes('eyebrow');
+  const showEyebrow = L.eyebrow && usesEyebrow && c.eyebrow.trim().length > 0;
+  const eyebrowAlign = slide.eyebrowAlign === 'inherit' ? slide.align : slide.eyebrowAlign;
+  const eyebrowTop = showEyebrow && slide.eyebrowPlacement === 'top';
+  const eyebrowInline = showEyebrow && slide.eyebrowPlacement === 'inline';
+
+  const sideMedia = img && placement !== 'background' && placement !== 'none';
+  const mediaStyle =
+    placement === 'left' || placement === 'right'
+      ? { width: `${(img?.size ?? 0.5) * 100}%` }
+      : { height: `${(img?.size ?? 0.5) * 100}%` };
 
   return (
     <div
@@ -156,13 +157,26 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
       data-align={slide.align}
       data-layout={slide.layout}
       data-aspect={carousel.aspect}
+      data-img={placement}
       data-export-id={slide.id}
       style={{ width: w, height: h }}
     >
+      {/* background image sits behind the accents + content */}
+      {img && placement === 'background' && (
+        <Fragment>
+          <img
+            className="cc-bgimage"
+            src={img.src}
+            alt=""
+            style={{ opacity: img.opacity, objectFit: img.fit, objectPosition: `${img.focusX * 100}% ${img.focusY * 100}%` }}
+          />
+          {img.overlay > 0 && <div className="cc-bgscrim" style={{ opacity: img.overlay }} aria-hidden />}
+        </Fragment>
+      )}
+
       {L.backgroundAccents && (
         <Fragment>
           <div className="cc-accents" aria-hidden />
-          {/* the grain (an expensive SVG turbulence) only matters for somatic */}
           {carousel.mode === 'somatic-sanctuary' && <div className="cc-grain" aria-hidden />}
         </Fragment>
       )}
@@ -175,19 +189,53 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
         </span>
       )}
 
-      <div className="cc-content">
-        <LayoutBody slide={slide} />
+      <div className="cc-main" data-placement={placement}>
+        {sideMedia && (
+          <div className="cc-media" style={mediaStyle}>
+            <img
+              src={img.src}
+              alt=""
+              style={{ objectFit: img.fit, objectPosition: `${img.focusX * 100}% ${img.focusY * 100}%` }}
+            />
+          </div>
+        )}
+
+        <div className="cc-editorial">
+          {eyebrowTop && (
+            <span className="cc-eyebrow cc-eyebrow--top" style={{ textAlign: eyebrowAlign }}>
+              {c.eyebrow}
+            </span>
+          )}
+          <div className="cc-anchor" data-anchor={slide.contentAnchor}>
+            <div className="cc-content">
+              {eyebrowInline && (
+                <span className="cc-eyebrow" style={{ textAlign: eyebrowAlign, width: '100%' }}>
+                  {c.eyebrow}
+                </span>
+              )}
+              <LayoutBody slide={slide} />
+            </div>
+          </div>
+        </div>
       </div>
 
       {showRef && (
         <div className="cc-ref">
           <span className="cc-ref__tag">REF</span>
-          <span className="cc-ref__text">{slide.content.reference}</span>
+          <span className="cc-ref__text">{c.reference}</span>
         </div>
       )}
 
       <footer className="cc-footer">
-        {L.logo ? <span className="cc-brand">{carousel.brandName}</span> : <span />}
+        {L.logo ? (
+          carousel.logoSrc ? (
+            <img className="cc-logo" src={carousel.logoSrc} alt={carousel.brandName} />
+          ) : (
+            <span className="cc-brand">{carousel.brandName}</span>
+          )
+        ) : (
+          <span />
+        )}
         <span className="cc-footer__right">
           {L.logo && carousel.handle && <span className="cc-handle">{carousel.handle}</span>}
           {L.pagination && (

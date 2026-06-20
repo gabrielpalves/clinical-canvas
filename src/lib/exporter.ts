@@ -61,10 +61,13 @@ export async function exportCarouselZip(
   slideIds: string[],
   aspect: AspectId,
   name: string,
+  caption: string,
   onProgress?: (p: ZipProgress) => void,
 ): Promise<void> {
   const zip = new JSZip();
   const total = slideIds.length;
+
+  if (caption.trim()) zip.file('legenda.txt', caption);
 
   // Compute the embedded-font CSS once and reuse it for every slide.
   let fontEmbedCSS: string | undefined;

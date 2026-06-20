@@ -1,14 +1,19 @@
 import type {
   BackgroundStyle,
   Carousel,
+  DiagramConfig,
+  ElementAlign,
+  EyebrowPlacement,
   LayoutId,
   Slide,
   SlideContent,
+  SlideImage,
   SlideLayers,
   TextAlign,
+  VerticalAnchor,
 } from '../types';
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export function uid(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
@@ -26,8 +31,6 @@ export function emptyContent(): SlideContent {
     stat: '',
     statLabel: '',
     reference: '',
-    imageSrc: null,
-    imageFit: 'cover',
   };
 }
 
@@ -42,10 +45,60 @@ export function defaultLayers(): SlideLayers {
   };
 }
 
+/** Default styling/positioning of a slide — used as the "reset" baseline. */
+export interface SlideStyleDefaults {
+  align: TextAlign;
+  contentAnchor: VerticalAnchor;
+  background: BackgroundStyle;
+  eyebrowAlign: ElementAlign;
+  eyebrowPlacement: EyebrowPlacement;
+}
+
+export const SLIDE_STYLE_DEFAULTS: SlideStyleDefaults = {
+  align: 'left',
+  contentAnchor: 'center',
+  background: 'solid',
+  eyebrowAlign: 'inherit',
+  eyebrowPlacement: 'inline',
+};
+
+export function defaultDiagram(): DiagramConfig {
+  return {
+    type: 'matrix',
+    xLabel: 'Eixo horizontal',
+    yLabel: 'Eixo vertical',
+    quadrants: ['Alto / Baixo', 'Alto / Alto', 'Baixo / Baixo', 'Baixo / Alto'],
+    setA: 'Conceito A',
+    setB: 'Conceito B',
+    overlap: 'Em comum',
+    marker: 'Ponto ótimo',
+    nodes: ['Pensamentos', 'Emoções', 'Comportamentos'],
+  };
+}
+
+/** A fresh image with sensible defaults for a given placement. */
+export function defaultImage(src: string, placement: SlideImage['placement'] = 'background'): SlideImage {
+  return {
+    src,
+    placement,
+    fit: 'cover',
+    size: 0.5,
+    focusX: 0.5,
+    focusY: 0.5,
+    opacity: placement === 'background' ? 0.6 : 1,
+    overlay: placement === 'background' ? 0.35 : 0,
+  };
+}
+
 interface SlideSeed {
   layout: LayoutId;
   align?: TextAlign;
+  contentAnchor?: VerticalAnchor;
   background?: BackgroundStyle;
+  image?: SlideImage | null;
+  diagram?: Partial<DiagramConfig>;
+  eyebrowAlign?: ElementAlign;
+  eyebrowPlacement?: EyebrowPlacement;
   content?: Partial<SlideContent>;
   layers?: Partial<SlideLayers>;
 }
@@ -54,8 +107,13 @@ export function createSlide(seed: SlideSeed): Slide {
   return {
     id: uid(),
     layout: seed.layout,
-    align: seed.align ?? 'left',
-    background: seed.background ?? 'solid',
+    align: seed.align ?? SLIDE_STYLE_DEFAULTS.align,
+    contentAnchor: seed.contentAnchor ?? SLIDE_STYLE_DEFAULTS.contentAnchor,
+    background: seed.background ?? SLIDE_STYLE_DEFAULTS.background,
+    image: seed.image ?? null,
+    diagram: { ...defaultDiagram(), ...seed.diagram },
+    eyebrowAlign: seed.eyebrowAlign ?? SLIDE_STYLE_DEFAULTS.eyebrowAlign,
+    eyebrowPlacement: seed.eyebrowPlacement ?? SLIDE_STYLE_DEFAULTS.eyebrowPlacement,
     content: { ...emptyContent(), ...seed.content },
     layers: { ...defaultLayers(), ...seed.layers },
   };
@@ -69,7 +127,7 @@ export function blankSlide(layout: LayoutId): Slide {
     list: { eyebrow: 'Na prática', title: 'Três caminhos', items: ['Primeiro passo', 'Segundo passo', 'Terceiro passo'] },
     quote: { quote: 'Uma frase que vale a pausa.', author: 'Autor, Obra (ano)' },
     statistic: { eyebrow: 'Evidência', stat: '70%', statLabel: 'do que descreve o dado', body: 'Uma frase de contexto sobre o número.' },
-    image: { title: 'Legenda da imagem', body: 'Texto de apoio opcional.' },
+    diagram: { eyebrow: 'Modelo', title: 'O título do diagrama' },
     cta: { eyebrow: 'Para levar com você', title: 'Salve este post', subtitle: 'Compartilhe com quem precisa ler isto hoje.' },
   };
   return createSlide({ layout, content: placeholders[layout] });
@@ -142,6 +200,12 @@ export function seedCarousel(): Carousel {
     aspect: 'portrait',
     handle: '@psilaisabitencourt',
     brandName: 'Laísa Bitencourt · Psicóloga',
+    logoSrc: null,
+    caption:
+      'O silêncio que antecede a emoção 🌿\n\n' +
+      'Toda emoção carrega uma informação. Aprender a fazer uma pausa antes de reagir é uma das habilidades mais transformadoras da regulação emocional.\n\n' +
+      'Salve este post para os dias difíceis e compartilhe com quem precisa ler isto hoje. 💛\n\n' +
+      '#regulacaoemocional #psicologia #saudemental #tcc #dbt #autoconhecimento',
     slides,
     bands: [],
   };

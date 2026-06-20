@@ -4,6 +4,7 @@ import { useCarousel } from '../state/CarouselContext';
 import { DESIGN_MODES } from '../designModes';
 import { DIMENSIONS } from '../lib/helpers';
 import { exportCarouselZip, exportSlidePng } from '../lib/exporter';
+import { TemplatesMenu } from './TemplatesMenu';
 import type { AspectId } from '../types';
 
 export function Toolbar({ onPreview }: { onPreview: () => void }) {
@@ -31,6 +32,7 @@ export function Toolbar({ onPreview }: { onPreview: () => void }) {
         carousel.slides.map((s) => s.id),
         carousel.aspect,
         carousel.brandName,
+        carousel.caption,
         (p) => setBusy(`zip-${Math.round((p.done / p.total) * 100)}`),
       );
     } catch (err) {
@@ -86,6 +88,7 @@ export function Toolbar({ onPreview }: { onPreview: () => void }) {
           ))}
         </div>
 
+        <TemplatesMenu />
         <button className="btn btn--ghost" onClick={onPreview} title="Pré-visualizar">
           <Eye size={16} /> Prévia
         </button>

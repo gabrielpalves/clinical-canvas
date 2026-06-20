@@ -19,13 +19,62 @@ export type LayoutId =
   | 'list'
   | 'quote'
   | 'statistic'
-  | 'image'
+  | 'diagram'
   | 'cta';
 
-export type TextAlign = 'left' | 'center';
+/** The clean vector figures available on a `diagram` slide. */
+export type DiagramType = 'matrix' | 'venn' | 'distribution' | 'cycle';
+
+/** Data behind a diagram. Each type uses the subset of fields it needs. */
+export interface DiagramConfig {
+  type: DiagramType;
+  /** matrix + distribution */
+  xLabel: string;
+  yLabel: string;
+  /** matrix quadrants: top-left, top-right, bottom-left, bottom-right */
+  quadrants: [string, string, string, string];
+  /** venn */
+  setA: string;
+  setB: string;
+  overlap: string;
+  /** distribution: label for the highlighted peak */
+  marker: string;
+  /** cycle: the three nodes of the loop */
+  nodes: [string, string, string];
+}
+
+export type TextAlign = 'left' | 'center' | 'right';
+
+/** Where the text block sits vertically within the slide. */
+export type VerticalAnchor = 'top' | 'center' | 'bottom';
+
+/** Alignment that can either follow the slide or be overridden per element. */
+export type ElementAlign = 'inherit' | 'left' | 'center' | 'right';
+
+/** Where the eyebrow sits: flowing with the text, or pinned near the top. */
+export type EyebrowPlacement = 'inline' | 'top';
 
 /** How a slide paints its background. Lets the user kill gradients etc. */
-export type BackgroundStyle = 'solid' | 'soft' | 'gradient' | 'image';
+export type BackgroundStyle = 'solid' | 'soft' | 'gradient';
+
+/** Where an image lives on a slide. Non-background placements reflow the text. */
+export type ImagePlacement = 'background' | 'left' | 'right' | 'top' | 'bottom';
+
+/** A single image attached to one slide. */
+export interface SlideImage {
+  src: string;
+  placement: ImagePlacement;
+  fit: 'cover' | 'contain';
+  /** 0..1 — fraction of the slide the image occupies (left/right/top/bottom). */
+  size: number;
+  /** focal point for `cover` crops, 0..1. */
+  focusX: number;
+  focusY: number;
+  /** background only: image opacity, 0..1. */
+  opacity: number;
+  /** background only: strength of the readability scrim, 0..1. */
+  overlay: number;
+}
 
 /**
  * A continuous image that spans several consecutive slides to create the
@@ -67,15 +116,23 @@ export interface SlideContent {
   stat: string;
   statLabel: string;
   reference: string;
-  imageSrc: string | null;
-  imageFit: 'cover' | 'contain';
 }
 
 export interface Slide {
   id: string;
   layout: LayoutId;
+  /** default alignment for the slide's text. */
   align: TextAlign;
+  /** vertical position of the text block. */
+  contentAnchor: VerticalAnchor;
   background: BackgroundStyle;
+  /** optional image, placed anywhere on the slide. */
+  image: SlideImage | null;
+  /** figure shown when layout === 'diagram'. */
+  diagram: DiagramConfig;
+  /** per-element overrides. */
+  eyebrowAlign: ElementAlign;
+  eyebrowPlacement: EyebrowPlacement;
   content: SlideContent;
   layers: SlideLayers;
 }
@@ -87,6 +144,10 @@ export interface Carousel {
   aspect: AspectId;
   handle: string;
   brandName: string;
+  /** optional logo image shown in the footer instead of the signature text. */
+  logoSrc: string | null;
+  /** the Instagram caption (+ hashtags); exported alongside the images. */
+  caption: string;
   slides: Slide[];
   bands: PanoramaBand[];
 }
