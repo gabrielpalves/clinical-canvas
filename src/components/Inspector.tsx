@@ -226,15 +226,13 @@ export function Inspector() {
             )}
           </div>
         </Field>
-        {slide.bgColor === 'auto' && (
-          <Field label="Tratamento do fundo">
-            <div className="seg">
-              {BACKGROUNDS.map((b) => (
-                <button key={b.id} className={`seg__btn${slide.background === b.id ? ' is-active' : ''}`} onClick={() => setField({ background: b.id })}>{b.label}</button>
-              ))}
-            </div>
-          </Field>
-        )}
+        <Field label="Tratamento do fundo">
+          <div className="seg">
+            {BACKGROUNDS.map((b) => (
+              <button key={b.id} className={`seg__btn${slide.background === b.id ? ' is-active' : ''}`} onClick={() => setField({ background: b.id })}>{b.label}</button>
+            ))}
+          </div>
+        </Field>
         <button className="btn btn--ghost btn--sm" onClick={() => dispatch({ type: 'resetSlide', id })}>
           <RotateCcw size={14} /> Restaurar padrão do slide
         </button>
@@ -297,6 +295,23 @@ export function Inspector() {
             </label>
           ))}
         </div>
+        {slide.layers.swipe && (
+          <>
+            <label className="toggle" style={{ marginTop: 12 }}>
+              <input type="checkbox" checked={carousel.swipeLabel} onChange={(e) => dispatch({ type: 'setMeta', patch: { swipeLabel: e.target.checked } })} />
+              <span>Mostrar a palavra "arraste"</span>
+            </label>
+            <Field label="Posição da seta">
+              <div className="seg">
+                {(['bottom', 'middle'] as const).map((p) => (
+                  <button key={p} className={`seg__btn${carousel.swipePosition === p ? ' is-active' : ''}`} onClick={() => dispatch({ type: 'setMeta', patch: { swipePosition: p } })}>
+                    {p === 'bottom' ? 'Base' : 'Meio'}
+                  </button>
+                ))}
+              </div>
+            </Field>
+          </>
+        )}
       </section>
 
       {/* decorations */}

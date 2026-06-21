@@ -46,7 +46,7 @@ type Action =
   | { type: 'reset' }
   | { type: 'setMode'; mode: DesignModeId }
   | { type: 'setAspect'; aspect: AspectId }
-  | { type: 'setMeta'; patch: Partial<Pick<Carousel, 'handle' | 'brandName' | 'logoSrc' | 'caption' | 'footerReversed'>> }
+  | { type: 'setMeta'; patch: Partial<Pick<Carousel, 'handle' | 'brandName' | 'logoSrc' | 'caption' | 'footerReversed' | 'swipeLabel' | 'swipePosition'>> }
   | { type: 'applyTemplate'; slides: Slide[]; caption: string }
   | { type: 'addSlide'; preset: PresetId; afterId?: string }
   | { type: 'duplicateSlide'; id: string }
@@ -286,6 +286,8 @@ function migrateToV3(old: Record<string, unknown>): Carousel {
     brandName: (old.brandName as string) ?? 'Laísa Bitencourt · Psicóloga',
     logoSrc: (old.logoSrc as string | null) ?? null,
     footerReversed: (old.footerReversed as boolean) ?? false,
+    swipeLabel: (old.swipeLabel as boolean) ?? true,
+    swipePosition: (old.swipePosition as Carousel['swipePosition']) ?? 'bottom',
     caption: (old.caption as string) ?? '',
     slides,
     bands: (old.bands as Carousel['bands']) ?? [],
@@ -299,6 +301,8 @@ function normalize(c: Record<string, unknown>): Carousel {
     ...carousel,
     logoSrc: (c.logoSrc as string | null) ?? null,
     footerReversed: (c.footerReversed as boolean) ?? false,
+    swipeLabel: (c.swipeLabel as boolean) ?? true,
+    swipePosition: (c.swipePosition as Carousel['swipePosition']) ?? 'bottom',
     caption: (c.caption as string) ?? '',
     bands: (c.bands as Carousel['bands']) ?? [],
     slides: carousel.slides.map((s) => ({

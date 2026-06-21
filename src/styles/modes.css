@@ -121,6 +121,7 @@
    ========================================================================== */
 .cc-frame[data-bgcolor='offwhite'] {
   --cc-bg: #fafaf8;
+  --cc-bg-soft: #f2efe9;
   --cc-heading: #5d4037;
   --cc-ink: #433430;
   --cc-accent: #bfa065;
@@ -130,6 +131,7 @@
 }
 .cc-frame[data-bgcolor='beige'] {
   --cc-bg: #f2efe9;
+  --cc-bg-soft: #ebe4d8;
   --cc-heading: #5d4037;
   --cc-ink: #433430;
   --cc-accent: #bfa065;
@@ -139,6 +141,7 @@
 }
 .cc-frame[data-bgcolor='gold'] {
   --cc-bg: #d4b985;
+  --cc-bg-soft: #cbac75;
   --cc-heading: #4a3127;
   --cc-ink: #4a3a30;
   --cc-accent: #5d4037;
@@ -148,6 +151,7 @@
 }
 .cc-frame[data-bgcolor='brown'] {
   --cc-bg: #5d4037;
+  --cc-bg-soft: #6b4b40;
   --cc-heading: #fdfaf4;
   --cc-ink: #f2efe9;
   --cc-accent: #d4b985;
@@ -157,6 +161,7 @@
 }
 .cc-frame[data-bgcolor='wine'] {
   --cc-bg: #682d36;
+  --cc-bg-soft: #763640;
   --cc-heading: #fdf6f2;
   --cc-ink: #f3e7e3;
   --cc-accent: #d4b985;
@@ -166,6 +171,7 @@
 }
 .cc-frame[data-bgcolor='blue'] {
   --cc-bg: #131736;
+  --cc-bg-soft: #1c2147;
   --cc-heading: #ffffff;
   --cc-ink: #e9e8f0;
   --cc-accent: #d4b985;
@@ -243,17 +249,35 @@
 .cc-decos--front {
   z-index: 3;
 }
+/* decoration colour drives the shapes' currentColor (class, not inline var, so
+   it survives html-to-image export) */
+.cc-deco-accent {
+  color: var(--cc-accent);
+}
+.cc-deco-heading {
+  color: var(--cc-heading);
+}
+.cc-deco-muted {
+  color: var(--cc-muted);
+}
 
 /* swipe / "arraste" hint */
 .cc-swipe {
   position: absolute;
   right: var(--cc-pad);
-  bottom: 150px;
   z-index: 3;
   display: flex;
   align-items: center;
   gap: 12px;
   color: var(--cc-accent);
+}
+.cc-swipe[data-pos='bottom'] {
+  bottom: 190px;
+}
+.cc-swipe[data-pos='middle'] {
+  top: 50%;
+  right: 56px;
+  transform: translateY(-50%);
 }
 .cc-swipe__label {
   font-family: var(--cc-sans);
@@ -380,6 +404,14 @@
 /* per-block wrapper + alignment override */
 .cc-block {
   width: 100%;
+}
+.cc-block--boxed {
+  border: 1px solid var(--cc-line);
+  border-radius: var(--cc-radius);
+  padding-top: 36px;
+  padding-bottom: 36px;
+  padding-left: 40px;
+  padding-right: 40px;
 }
 .cc-block[data-balign='left'] {
   text-align: left;

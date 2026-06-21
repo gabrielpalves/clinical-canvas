@@ -169,18 +169,23 @@ body {
 /* ---- toolbar ------------------------------------------------------------- */
 .toolbar {
   flex-shrink: 0;
-  height: 66px;
+  min-height: 66px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
-  padding: 0 20px;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  padding: 10px 20px;
   background: var(--panel);
   border-bottom: 1px solid var(--border);
 }
 .toolbar__brand {
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
+}
+.toolbar__sub {
+  white-space: nowrap;
 }
 .toolbar__logo {
   font-family: var(--serif);

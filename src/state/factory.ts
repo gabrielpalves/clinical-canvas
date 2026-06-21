@@ -128,6 +128,9 @@ export function createBlock(type: BlockType, patch: Partial<Block> = {}): Block 
     type,
     align: 'inherit',
     scale: 1,
+    spaceTop: 0,
+    padX: 0,
+    boxed: false,
     text: '',
     size: 'md',
     items: [],
@@ -286,6 +289,8 @@ export function seedCarousel(): Carousel {
     brandName: 'Laísa Bitencourt · Psicóloga',
     logoSrc: null,
     footerReversed: false,
+    swipeLabel: true,
+    swipePosition: 'bottom',
     caption:
       'O silêncio que antecede a emoção 🌿\n\n' +
       'Toda emoção carrega uma informação. Aprender a fazer uma pausa antes de reagir é uma das habilidades mais transformadoras da regulação emocional.\n\n' +

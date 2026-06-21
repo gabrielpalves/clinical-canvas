@@ -79,6 +79,27 @@ export function BlockEditor({ block, index, total, onPatch, onDiagram, onMove, o
         )}
       </div>
 
+      <div className="block-card__row">
+        <div className="size-row size-row--inline">
+          <span className="size-row__icon" title="Espaço acima do bloco">↥</span>
+          <input type="range" min={0} max={140} value={Math.round(block.spaceTop)}
+            onDoubleClick={() => onPatch({ spaceTop: 0 })}
+            onChange={(e) => onPatch({ spaceTop: Number(e.target.value) })} />
+          <span className="size-row__suffix">{Math.round(block.spaceTop)}</span>
+        </div>
+        <div className="size-row size-row--inline">
+          <span className="size-row__icon" title="Padding lateral">↔</span>
+          <input type="range" min={0} max={120} value={Math.round(block.padX)}
+            onDoubleClick={() => onPatch({ padX: 0 })}
+            onChange={(e) => onPatch({ padX: Number(e.target.value) })} />
+          <span className="size-row__suffix">{Math.round(block.padX)}</span>
+        </div>
+        <label className="toggle">
+          <input type="checkbox" checked={block.boxed} onChange={(e) => onPatch({ boxed: e.target.checked })} />
+          <span>Caixa</span>
+        </label>
+      </div>
+
       {block.type === 'heading' && (
         <>
           <MarkupField multiline rows={2} value={block.text} onChange={(v) => onPatch({ text: v })} />

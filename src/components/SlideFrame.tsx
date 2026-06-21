@@ -87,7 +87,12 @@ function BlockView({ block, slideAlign, frameH }: { block: Block; slideAlign: Sl
       inner = null;
   }
   return (
-    <div className="cc-block" data-balign={align} data-type={block.type}>
+    <div
+      className={`cc-block${block.boxed ? ' cc-block--boxed' : ''}`}
+      data-balign={align}
+      data-type={block.type}
+      style={{ marginTop: block.spaceTop ? `${block.spaceTop}px` : undefined, paddingLeft: block.padX ? `${block.padX}px` : undefined, paddingRight: block.padX ? `${block.padX}px` : undefined }}
+    >
       {inner}
     </div>
   );
@@ -134,7 +139,7 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
     <div
       className="cc-frame"
       data-mode={carousel.mode}
-      data-bg={slide.bgColor === 'auto' ? slide.background : 'solid'}
+      data-bg={slide.background}
       data-bgcolor={slide.bgColor}
       data-align={slide.align}
       data-aspect={carousel.aspect}
@@ -161,8 +166,8 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
       {L.decorativeMark && <span className="cc-mark" aria-hidden>&#8220;</span>}
 
       {L.swipe && (
-        <span className="cc-swipe" aria-hidden>
-          <span className="cc-swipe__label">arraste</span>
+        <span className="cc-swipe" data-pos={carousel.swipePosition} aria-hidden>
+          {carousel.swipeLabel && <span className="cc-swipe__label">arraste</span>}
           <svg viewBox="0 0 40 24" className="cc-swipe__icon" xmlns="http://www.w3.org/2000/svg">
             <path d="M4 12 H30 M22 5 L31 12 L22 19" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>

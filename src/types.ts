@@ -210,6 +210,12 @@ export interface Block {
   align: ElementAlign;
   /** per-block text size multiplier, applied on top of the defaults. */
   scale: number;
+  /** extra space (px) above this block. */
+  spaceTop: number;
+  /** horizontal padding (px) inside this block. */
+  padX: number;
+  /** draw a bordered box around the block. */
+  boxed: boolean;
   /** heading / paragraph / quote text. */
   text: string;
   /** heading size. */
@@ -268,6 +274,10 @@ export interface Carousel {
   logoSrc: string | null;
   /** swap the footer: handle on the left, signature on the right. */
   footerReversed: boolean;
+  /** show the word "arraste" next to the swipe arrow. */
+  swipeLabel: boolean;
+  /** where the swipe arrow sits. */
+  swipePosition: 'bottom' | 'middle';
   /** the Instagram caption (+ hashtags); exported alongside the images. */
   caption: string;
   slides: Slide[];

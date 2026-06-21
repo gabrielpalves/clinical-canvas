@@ -1,11 +1,5 @@
 import type { Decoration, DecorationKind } from '../types';
 
-const COLOR: Record<Decoration['color'], string> = {
-  accent: 'var(--cc-accent)',
-  heading: 'var(--cc-heading)',
-  muted: 'var(--cc-muted)',
-};
-
 /** Shapes are authored in a 100×100 box centered on the origin. */
 function Shape({ kind, filled }: { kind: DecorationKind; filled: boolean }) {
   const fill = filled ? 'currentColor' : 'none';
@@ -62,8 +56,9 @@ export function Decorations({
       {decorations.map((d) => (
         <g
           key={d.id}
+          className={`cc-deco-${d.color}`}
           transform={`translate(${d.x * w} ${d.y * h}) rotate(${d.rotation}) scale(${(d.size * w) / 100})`}
-          style={{ color: COLOR[d.color], opacity: d.opacity }}
+          style={{ opacity: d.opacity }}
         >
           <Shape kind={d.kind} filled={d.filled} />
         </g>
