@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Plus } from 'lucide-react';
-import { LAYOUTS } from '../designModes';
-import type { LayoutId } from '../types';
+import { PRESETS } from '../designModes';
+import type { PresetId } from '../types';
 
 interface Props {
-  onAdd: (layout: LayoutId) => void;
-  variant?: 'tile' | 'button';
+  onAdd: (preset: PresetId) => void;
 }
 
-export function AddSlideMenu({ onAdd, variant = 'tile' }: Props) {
+export function AddSlideMenu({ onAdd }: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -28,31 +27,25 @@ export function AddSlideMenu({ onAdd, variant = 'tile' }: Props) {
 
   return (
     <div className="add-menu" ref={ref}>
-      <button
-        type="button"
-        className={variant === 'tile' ? 'add-tile' : 'btn btn--ghost'}
-        onClick={() => setOpen((v) => !v)}
-        title="Adicionar slide"
-      >
-        <Plus size={variant === 'tile' ? 28 : 16} />
-        {variant === 'button' && <span>Slide</span>}
+      <button type="button" className="add-tile" onClick={() => setOpen((v) => !v)} title="Adicionar slide">
+        <Plus size={28} />
       </button>
 
       {open && (
         <div className="add-menu__pop" role="menu">
-          <p className="add-menu__title">Escolha um layout</p>
-          {LAYOUTS.map((l) => (
+          <p className="add-menu__title">Novo slide</p>
+          {PRESETS.map((p) => (
             <button
-              key={l.id}
+              key={p.id}
               type="button"
               className="add-menu__item"
               onClick={() => {
-                onAdd(l.id);
+                onAdd(p.id);
                 setOpen(false);
               }}
             >
-              <span className="add-menu__name">{l.name}</span>
-              <span className="add-menu__desc">{l.description}</span>
+              <span className="add-menu__name">{p.name}</span>
+              <span className="add-menu__desc">{p.description}</span>
             </button>
           ))}
         </div>

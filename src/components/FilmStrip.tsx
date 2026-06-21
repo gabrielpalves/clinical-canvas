@@ -84,7 +84,7 @@ export function FilmStrip() {
         })}
 
         <div className="strip__cell strip__cell--add" style={{ height: DISPLAY_HEIGHT }}>
-          <AddSlideMenu onAdd={(layout) => dispatch({ type: 'addSlide', layout, afterId: selectedId ?? undefined })} />
+          <AddSlideMenu onAdd={(preset) => dispatch({ type: 'addSlide', preset, afterId: selectedId ?? undefined })} />
         </div>
       </div>
     </div>

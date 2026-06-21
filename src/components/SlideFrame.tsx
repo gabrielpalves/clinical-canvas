@@ -1,18 +1,11 @@
 import { Fragment } from 'react';
-import type { Carousel, Slide } from '../types';
-import { LAYOUT_MAP } from '../designModes';
+import type { Block, Carousel, ElementAlign, Slide } from '../types';
 import { DIMENSIONS, bandForSlide } from '../lib/helpers';
 import { Diagram } from './Diagram';
 import { Decorations } from './Decorations';
 
-interface Props {
-  slide: Slide;
-  carousel: Carousel;
-  index: number;
-  total: number;
-}
+const HEADING_PX: Record<Block['size'], number> = { xl: 104, lg: 90, md: 76, sm: 54 };
 
-/** Render a body string as paragraphs, preserving blank-line breaks. */
 function Paragraphs({ text }: { text: string }) {
   const parts = text.split(/\n{1,}/).filter((p) => p.trim().length > 0);
   return (
@@ -24,90 +17,81 @@ function Paragraphs({ text }: { text: string }) {
   );
 }
 
-/** Everything in a slide except the eyebrow (which is positioned separately). */
-function LayoutBody({ slide }: { slide: Slide }) {
-  const c = slide.content;
+function BlockView({ block, slideAlign, frameH }: { block: Block; slideAlign: Slide['align']; frameH: number }) {
+  const align: ElementAlign = block.align === 'inherit' ? slideAlign : block.align;
+  const s = block.scale;
+  const fz = (px: number) => ({ fontSize: `${px * s}px` });
 
-  switch (slide.layout) {
-    case 'cover':
-      return (
-        <div className="cc-stack cc-stack--cover">
-          <h1 className="cc-title cc-title--xl">{c.title}</h1>
-          {c.subtitle && <p className="cc-subtitle">{c.subtitle}</p>}
-        </div>
-      );
-
-    case 'text':
-      return (
-        <div className="cc-stack">
-          {c.title && <h2 className="cc-title">{c.title}</h2>}
-          <div className="cc-body">
-            <Paragraphs text={c.body} />
-          </div>
-        </div>
-      );
-
+  let inner: React.ReactNode = null;
+  switch (block.type) {
+    case 'heading':
+      inner = <h2 className="cc-h" style={fz(HEADING_PX[block.size])}>{block.text}</h2>;
+      break;
+    case 'paragraph':
+      inner = <div className="cc-p" style={fz(36)}><Paragraphs text={block.text} /></div>;
+      break;
     case 'list':
-      return (
-        <div className="cc-stack">
-          {c.title && <h2 className="cc-title">{c.title}</h2>}
-          <ol className="cc-list">
-            {c.items.map((item, i) => (
-              <li key={i} className="cc-list__item">
-                <span className="cc-list__num">{String(i + 1).padStart(2, '0')}</span>
-                <span className="cc-list__text">{item}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
+      inner = (
+        <ol className="cc-list" data-numbered={block.numbered}>
+          {block.items.map((item, i) => (
+            <li key={i} className="cc-list__item">
+              {block.numbered ? (
+                <span className="cc-list__num" style={fz(54)}>{String(i + 1).padStart(2, '0')}</span>
+              ) : (
+                <span className="cc-list__dot" aria-hidden />
+              )}
+              <span className="cc-list__text" style={fz(37)}>{item}</span>
+            </li>
+          ))}
+        </ol>
       );
-
+      break;
     case 'quote':
-      return (
-        <div className="cc-stack cc-stack--quote">
-          <blockquote className="cc-quote">{c.quote}</blockquote>
-          {c.author && <cite className="cc-cite">— {c.author}</cite>}
-        </div>
+      inner = (
+        <>
+          <blockquote className="cc-quote" style={fz(70)}>{block.text}</blockquote>
+          {block.author && <cite className="cc-cite" style={fz(28)}>— {block.author}</cite>}
+        </>
       );
-
+      break;
     case 'statistic':
-      return (
-        <div className="cc-stack cc-stack--stat">
-          <span className="cc-stat">{c.stat}</span>
-          {c.statLabel && <span className="cc-stat__label">{c.statLabel}</span>}
-          {c.body && (
-            <div className="cc-body">
-              <Paragraphs text={c.body} />
-            </div>
-          )}
-        </div>
+      inner = (
+        <>
+          <span className="cc-stat" style={fz(200)}>{block.stat}</span>
+          {block.statLabel && <span className="cc-stat__label" style={fz(42)}>{block.statLabel}</span>}
+          {block.body && <div className="cc-p cc-stat__body" style={fz(32)}><Paragraphs text={block.body} /></div>}
+        </>
       );
-
+      break;
     case 'diagram':
-      return (
-        <div className="cc-stack cc-stack--diagram">
-          {c.title && <h2 className="cc-title cc-title--sm">{c.title}</h2>}
-          <div className="cc-diagram">
-            <Diagram config={slide.diagram} />
-          </div>
-        </div>
+      inner = <div className="cc-diagram"><Diagram config={block.diagram} /></div>;
+      break;
+    case 'image':
+      inner = (
+        <figure className="cc-imgblock">
+          {block.caption && block.captionPos === 'above' && <figcaption className="cc-caption" style={fz(26)}>{block.caption}</figcaption>}
+          {block.src ? (
+            <img className="cc-img" src={block.src} alt="" style={{ height: `${block.imageHeight * frameH}px`, objectFit: block.fit }} />
+          ) : (
+            <div className="cc-img cc-img--ph" style={{ height: `${block.imageHeight * frameH}px` }}>imagem</div>
+          )}
+          {block.caption && block.captionPos === 'below' && <figcaption className="cc-caption" style={fz(26)}>{block.caption}</figcaption>}
+        </figure>
       );
-
-    case 'cta':
-      return (
-        <div className="cc-stack cc-stack--cta">
-          <h2 className="cc-title cc-title--lg">{c.title}</h2>
-          <span className="cc-rule" />
-          {c.subtitle && <p className="cc-subtitle">{c.subtitle}</p>}
-        </div>
-      );
-
+      break;
+    case 'divider':
+      inner = <span className="cc-rule" />;
+      break;
     default:
-      return null;
+      inner = null;
   }
+  return (
+    <div className="cc-block" data-balign={align} data-type={block.type}>
+      {inner}
+    </div>
+  );
 }
 
-/** A panorama band: one image sliced across several consecutive slides. */
 function PanoramaLayer({ slide, carousel }: { slide: Slide; carousel: Carousel }) {
   const slice = bandForSlide(carousel, slide.id);
   if (!slice) return null;
@@ -128,27 +112,22 @@ function PanoramaLayer({ slide, carousel }: { slide: Slide; carousel: Carousel }
   );
 }
 
+interface Props {
+  slide: Slide;
+  carousel: Carousel;
+  index: number;
+  total: number;
+}
+
 export function SlideFrame({ slide, carousel, index, total }: Props) {
   const { w, h } = DIMENSIONS[carousel.aspect];
   const L = slide.layers;
-  const c = slide.content;
-  const img = slide.image;
-  const placement = img?.placement ?? 'none';
-
-  const showRef = L.reference && c.reference.trim().length > 0;
-  const showMark =
-    L.decorativeMark && (slide.layout === 'quote' || slide.layout === 'text' || slide.layout === 'cover');
-  const usesEyebrow = LAYOUT_MAP[slide.layout].fields.includes('eyebrow');
-  const showEyebrow = L.eyebrow && usesEyebrow && c.eyebrow.trim().length > 0;
+  const bg = slide.bgImage;
+  const showRef = L.reference && slide.reference.trim().length > 0;
+  const showEyebrow = L.eyebrow && slide.eyebrow.trim().length > 0;
   const eyebrowAlign = slide.eyebrowAlign === 'inherit' ? slide.align : slide.eyebrowAlign;
   const eyebrowTop = showEyebrow && slide.eyebrowPlacement === 'top';
   const eyebrowInline = showEyebrow && slide.eyebrowPlacement === 'inline';
-
-  const sideMedia = img && placement !== 'background' && placement !== 'none';
-  const mediaStyle =
-    placement === 'left' || placement === 'right'
-      ? { width: `${(img?.size ?? 0.5) * 100}%` }
-      : { height: `${(img?.size ?? 0.5) * 100}%` };
 
   return (
     <div
@@ -156,22 +135,14 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
       data-mode={carousel.mode}
       data-bg={slide.background}
       data-align={slide.align}
-      data-layout={slide.layout}
       data-aspect={carousel.aspect}
-      data-img={placement}
       data-export-id={slide.id}
       style={{ width: w, height: h }}
     >
-      {/* background image sits behind the accents + content */}
-      {img && placement === 'background' && (
+      {bg && (
         <Fragment>
-          <img
-            className="cc-bgimage"
-            src={img.src}
-            alt=""
-            style={{ opacity: img.opacity, objectFit: img.fit, objectPosition: `${img.focusX * 100}% ${img.focusY * 100}%` }}
-          />
-          {img.overlay > 0 && <div className="cc-bgscrim" style={{ opacity: img.overlay }} aria-hidden />}
+          <img className="cc-bgimage" src={bg.src} alt="" style={{ opacity: bg.opacity, objectFit: bg.fit, objectPosition: `${bg.focusX * 100}% ${bg.focusY * 100}%` }} />
+          {bg.overlay > 0 && <div className="cc-bgscrim" style={{ opacity: bg.overlay }} aria-hidden />}
         </Fragment>
       )}
 
@@ -183,56 +154,9 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
       )}
 
       <PanoramaLayer slide={slide} carousel={carousel} />
+      <Decorations decorations={slide.decorations.filter((d) => !d.front)} w={w} h={h} className="cc-decos cc-decos--back" />
 
-      <Decorations
-        decorations={slide.decorations.filter((d) => !d.front)}
-        w={w}
-        h={h}
-        className="cc-decos cc-decos--back"
-      />
-
-      {showMark && (
-        <span className="cc-mark" aria-hidden>
-          &#8220;
-        </span>
-      )}
-
-      <div className="cc-main" data-placement={placement}>
-        {sideMedia && (
-          <div className="cc-media" style={mediaStyle}>
-            <img
-              src={img.src}
-              alt=""
-              style={{ objectFit: img.fit, objectPosition: `${img.focusX * 100}% ${img.focusY * 100}%` }}
-            />
-          </div>
-        )}
-
-        <div className="cc-editorial">
-          {eyebrowTop && (
-            <span className="cc-eyebrow cc-eyebrow--top" style={{ textAlign: eyebrowAlign }}>
-              {c.eyebrow}
-            </span>
-          )}
-          <div className="cc-anchor" data-anchor={slide.contentAnchor}>
-            <div className="cc-content">
-              {eyebrowInline && (
-                <span className="cc-eyebrow" style={{ textAlign: eyebrowAlign, width: '100%' }}>
-                  {c.eyebrow}
-                </span>
-              )}
-              <LayoutBody slide={slide} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {showRef && (
-        <div className="cc-ref">
-          <span className="cc-ref__tag">REF</span>
-          <span className="cc-ref__text">{c.reference}</span>
-        </div>
-      )}
+      {L.decorativeMark && <span className="cc-mark" aria-hidden>&#8220;</span>}
 
       {L.swipe && (
         <span className="cc-swipe" aria-hidden>
@@ -241,6 +165,29 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
             <path d="M4 12 H30 M22 5 L31 12 L22 19" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </span>
+      )}
+
+      <div className="cc-editorial">
+        {eyebrowTop && (
+          <span className="cc-eyebrow cc-eyebrow--top" style={{ textAlign: eyebrowAlign }}>{slide.eyebrow}</span>
+        )}
+        <div className="cc-anchor" data-anchor={slide.contentAnchor}>
+          <div className="cc-content">
+            {eyebrowInline && (
+              <span className="cc-eyebrow" style={{ textAlign: eyebrowAlign, width: '100%' }}>{slide.eyebrow}</span>
+            )}
+            {slide.blocks.map((block) => (
+              <BlockView key={block.id} block={block} slideAlign={slide.align} frameH={h} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {showRef && (
+        <div className="cc-ref">
+          <span className="cc-ref__tag">REF</span>
+          <span className="cc-ref__text">{slide.reference}</span>
+        </div>
       )}
 
       <footer className="cc-footer">
@@ -254,9 +201,7 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
           ) : null;
           const handle = L.logo && carousel.handle ? <span className="cc-handle">{carousel.handle}</span> : null;
           const page = L.pagination ? (
-            <span className="cc-page">
-              {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
-            </span>
+            <span className="cc-page">{String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}</span>
           ) : null;
           const leftEl = carousel.footerReversed ? handle : brand;
           const rightEl = carousel.footerReversed ? brand : handle;
@@ -272,12 +217,7 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
         })()}
       </footer>
 
-      <Decorations
-        decorations={slide.decorations.filter((d) => d.front)}
-        w={w}
-        h={h}
-        className="cc-decos cc-decos--front"
-      />
+      <Decorations decorations={slide.decorations.filter((d) => d.front)} w={w} h={h} className="cc-decos cc-decos--front" />
     </div>
   );
 }

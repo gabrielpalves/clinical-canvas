@@ -9,30 +9,37 @@ import {
 } from 'react';
 import type {
   AspectId,
+  Block,
+  BlockType,
   Carousel,
   Decoration,
   DesignModeId,
   DiagramConfig,
-  LayoutId,
   PanoramaBand,
+  PresetId,
   Slide,
-  SlideContent,
   SlideImage,
   SlideLayers,
 } from '../types';
 import {
   SCHEMA_VERSION,
   SLIDE_STYLE_DEFAULTS,
-  blankSlide,
+  createBlock,
   defaultDiagram,
-  defaultImage,
   defaultLayers,
-  emptyContent,
+  presetSlide,
   seedCarousel,
   uid,
 } from './factory';
 
 const STORAGE_KEY = 'clinical-canvas:carousel:v1';
+
+type SlideFieldPatch = Partial<
+  Pick<
+    Slide,
+    'align' | 'contentAnchor' | 'background' | 'eyebrowAlign' | 'eyebrowPlacement' | 'eyebrow' | 'reference'
+  >
+>;
 
 type Action =
   | { type: 'load'; carousel: Carousel }
@@ -41,25 +48,19 @@ type Action =
   | { type: 'setAspect'; aspect: AspectId }
   | { type: 'setMeta'; patch: Partial<Pick<Carousel, 'handle' | 'brandName' | 'logoSrc' | 'caption' | 'footerReversed'>> }
   | { type: 'applyTemplate'; slides: Slide[]; caption: string }
-  | { type: 'addSlide'; layout: LayoutId; afterId?: string }
+  | { type: 'addSlide'; preset: PresetId; afterId?: string }
   | { type: 'duplicateSlide'; id: string }
   | { type: 'deleteSlide'; id: string }
   | { type: 'moveSlide'; id: string; dir: -1 | 1 }
-  | {
-      type: 'updateSlide';
-      id: string;
-      patch: Partial<
-        Pick<
-          Slide,
-          'layout' | 'align' | 'background' | 'contentAnchor' | 'eyebrowAlign' | 'eyebrowPlacement'
-        >
-      >;
-    }
-  | { type: 'updateContent'; id: string; patch: Partial<SlideContent> }
+  | { type: 'updateSlide'; id: string; patch: SlideFieldPatch }
   | { type: 'updateLayers'; id: string; patch: Partial<SlideLayers> }
-  | { type: 'setImage'; id: string; image: SlideImage | null }
-  | { type: 'updateImage'; id: string; patch: Partial<SlideImage> }
-  | { type: 'updateDiagram'; id: string; patch: Partial<DiagramConfig> }
+  | { type: 'addBlock'; id: string; blockType: BlockType; afterBlockId?: string }
+  | { type: 'updateBlock'; id: string; blockId: string; patch: Partial<Block> }
+  | { type: 'updateBlockDiagram'; id: string; blockId: string; patch: Partial<DiagramConfig> }
+  | { type: 'removeBlock'; id: string; blockId: string }
+  | { type: 'moveBlock'; id: string; blockId: string; dir: -1 | 1 }
+  | { type: 'setBgImage'; id: string; image: SlideImage | null }
+  | { type: 'updateBgImage'; id: string; patch: Partial<SlideImage> }
   | { type: 'addDecoration'; id: string; decoration: Decoration }
   | { type: 'updateDecoration'; id: string; decoId: string; patch: Partial<Decoration> }
   | { type: 'removeDecoration'; id: string; decoId: string }
@@ -70,6 +71,9 @@ type Action =
 
 function mapSlide(state: Carousel, id: string, fn: (s: Slide) => Slide): Carousel {
   return { ...state, slides: state.slides.map((s) => (s.id === id ? fn(s) : s)) };
+}
+function mapBlock(slide: Slide, blockId: string, fn: (b: Block) => Block): Slide {
+  return { ...slide, blocks: slide.blocks.map((b) => (b.id === blockId ? fn(b) : b)) };
 }
 
 function reducer(state: Carousel, action: Action): Carousel {
@@ -87,7 +91,7 @@ function reducer(state: Carousel, action: Action): Carousel {
     case 'applyTemplate':
       return { ...state, slides: action.slides, caption: action.caption, bands: [] };
     case 'addSlide': {
-      const slide = blankSlide(action.layout);
+      const slide = presetSlide(action.preset);
       const idx = action.afterId
         ? state.slides.findIndex((s) => s.id === action.afterId)
         : state.slides.length - 1;
@@ -98,12 +102,13 @@ function reducer(state: Carousel, action: Action): Carousel {
     case 'duplicateSlide': {
       const idx = state.slides.findIndex((s) => s.id === action.id);
       if (idx === -1) return state;
-      const original = state.slides[idx];
+      const o = state.slides[idx];
       const copy: Slide = {
-        ...original,
+        ...o,
         id: uid(),
-        content: { ...original.content, items: [...original.content.items] },
-        layers: { ...original.layers },
+        blocks: o.blocks.map((b) => ({ ...b, id: uid(), items: [...b.items], diagram: { ...b.diagram } })),
+        decorations: o.decorations.map((d) => ({ ...d, id: uid() })),
+        layers: { ...o.layers },
       };
       const next = [...state.slides];
       next.splice(idx + 1, 0, copy);
@@ -112,7 +117,6 @@ function reducer(state: Carousel, action: Action): Carousel {
     case 'deleteSlide': {
       if (state.slides.length <= 1) return state;
       const slides = state.slides.filter((s) => s.id !== action.id);
-      // keep panorama bands consistent
       const bands = state.bands
         .map((b) => ({ ...b, slideIds: b.slideIds.filter((sid) => sid !== action.id) }))
         .filter((b) => b.slideIds.length >= 2);
@@ -128,38 +132,45 @@ function reducer(state: Carousel, action: Action): Carousel {
     }
     case 'updateSlide':
       return mapSlide(state, action.id, (s) => ({ ...s, ...action.patch }));
-    case 'updateContent':
-      return mapSlide(state, action.id, (s) => ({
-        ...s,
-        content: { ...s.content, ...action.patch },
-      }));
     case 'updateLayers':
-      return mapSlide(state, action.id, (s) => ({
-        ...s,
-        layers: { ...s.layers, ...action.patch },
-      }));
-    case 'setImage':
-      return mapSlide(state, action.id, (s) => ({ ...s, image: action.image }));
-    case 'updateImage':
+      return mapSlide(state, action.id, (s) => ({ ...s, layers: { ...s.layers, ...action.patch } }));
+    case 'addBlock':
+      return mapSlide(state, action.id, (s) => {
+        const block = createBlock(action.blockType);
+        const idx = action.afterBlockId ? s.blocks.findIndex((b) => b.id === action.afterBlockId) : s.blocks.length - 1;
+        const blocks = [...s.blocks];
+        blocks.splice(idx + 1, 0, block);
+        return { ...s, blocks };
+      });
+    case 'updateBlock':
+      return mapSlide(state, action.id, (s) => mapBlock(s, action.blockId, (b) => ({ ...b, ...action.patch })));
+    case 'updateBlockDiagram':
       return mapSlide(state, action.id, (s) =>
-        s.image ? { ...s, image: { ...s.image, ...action.patch } } : s,
+        mapBlock(s, action.blockId, (b) => ({ ...b, diagram: { ...b.diagram, ...action.patch } })),
       );
-    case 'updateDiagram':
-      return mapSlide(state, action.id, (s) => ({
-        ...s,
-        diagram: { ...s.diagram, ...action.patch },
-      }));
+    case 'removeBlock':
+      return mapSlide(state, action.id, (s) =>
+        s.blocks.length <= 1 ? s : { ...s, blocks: s.blocks.filter((b) => b.id !== action.blockId) },
+      );
+    case 'moveBlock':
+      return mapSlide(state, action.id, (s) => {
+        const idx = s.blocks.findIndex((b) => b.id === action.blockId);
+        const target = idx + action.dir;
+        if (idx === -1 || target < 0 || target >= s.blocks.length) return s;
+        const blocks = [...s.blocks];
+        [blocks[idx], blocks[target]] = [blocks[target], blocks[idx]];
+        return { ...s, blocks };
+      });
+    case 'setBgImage':
+      return mapSlide(state, action.id, (s) => ({ ...s, bgImage: action.image }));
+    case 'updateBgImage':
+      return mapSlide(state, action.id, (s) => (s.bgImage ? { ...s, bgImage: { ...s.bgImage, ...action.patch } } : s));
     case 'addDecoration':
-      return mapSlide(state, action.id, (s) => ({
-        ...s,
-        decorations: [...s.decorations, action.decoration],
-      }));
+      return mapSlide(state, action.id, (s) => ({ ...s, decorations: [...s.decorations, action.decoration] }));
     case 'updateDecoration':
       return mapSlide(state, action.id, (s) => ({
         ...s,
-        decorations: s.decorations.map((d) =>
-          d.id === action.decoId ? { ...d, ...action.patch } : d,
-        ),
+        decorations: s.decorations.map((d) => (d.id === action.decoId ? { ...d, ...action.patch } : d)),
       }));
     case 'removeDecoration':
       return mapSlide(state, action.id, (s) => ({
@@ -170,17 +181,14 @@ function reducer(state: Carousel, action: Action): Carousel {
       return mapSlide(state, action.id, (s) => ({
         ...s,
         ...SLIDE_STYLE_DEFAULTS,
-        image: null,
+        bgImage: null,
         decorations: [],
         layers: defaultLayers(),
       }));
     case 'addBand':
       return { ...state, bands: [...state.bands, action.band] };
     case 'updateBand':
-      return {
-        ...state,
-        bands: state.bands.map((b) => (b.id === action.id ? { ...b, ...action.patch } : b)),
-      };
+      return { ...state, bands: state.bands.map((b) => (b.id === action.id ? { ...b, ...action.patch } : b)) };
     case 'removeBand':
       return { ...state, bands: state.bands.filter((b) => b.id !== action.id) };
     default:
@@ -188,32 +196,84 @@ function reducer(state: Carousel, action: Action): Carousel {
   }
 }
 
-/** Best-effort migration of a v1 persisted carousel to the v2 schema. */
-function migrateToV2(old: Record<string, unknown>): Carousel {
-  const slides = (old.slides as Array<Record<string, unknown>>).map((s) => {
+// ---------------------------------------------------------------------------
+// migration of older persisted carousels into the v3 (block-based) schema
+// ---------------------------------------------------------------------------
+
+const hd = (text: string, size: Block['size']) => createBlock('heading', { text, size });
+const pg = (text: string) => createBlock('paragraph', { text });
+
+function blocksFromLegacy(layout: string, content: Record<string, unknown>, diagram: unknown): Block[] {
+  const s = (k: string) => (content[k] as string) ?? '';
+  const items = (content.items as string[]) ?? [];
+  switch (layout) {
+    case 'cover':
+      return [hd(s('title'), 'xl'), pg(s('subtitle'))];
+    case 'list':
+      return [hd(s('title'), 'md'), createBlock('list', { items: [...items], numbered: true })];
+    case 'quote':
+      return [createBlock('quote', { text: s('quote'), author: s('author') })];
+    case 'statistic':
+      return [createBlock('statistic', { stat: s('stat'), statLabel: s('statLabel'), body: s('body') })];
+    case 'diagram':
+      return [hd(s('title'), 'md'), createBlock('diagram', { diagram: { ...defaultDiagram(), ...(diagram as object) } })];
+    case 'cta':
+      return [hd(s('title'), 'lg'), createBlock('divider'), pg(s('subtitle'))];
+    case 'image':
+      return [createBlock('image', { src: (content.imageSrc as string) ?? null, caption: s('title') }), pg(s('body'))];
+    case 'text':
+    default:
+      return [hd(s('title'), 'md'), pg(s('body'))];
+  }
+}
+
+function migrateToV3(old: Record<string, unknown>): Carousel {
+  const slides: Slide[] = (old.slides as Array<Record<string, unknown>>).map((s) => {
     const content = (s.content as Record<string, unknown>) ?? {};
-    const imageSrc = content.imageSrc as string | null | undefined;
-    const imageFit = (content.imageFit as 'cover' | 'contain') ?? 'cover';
-    const wasImageLayout = s.layout === 'image';
-    const image: SlideImage | null = imageSrc
-      ? { ...defaultImage(imageSrc, wasImageLayout ? 'top' : 'background'), fit: imageFit }
-      : null;
-    // 'image' was a valid background in v1 but isn't anymore
+    const layout = (s.layout as string) ?? 'text';
+    const img = s.image as SlideImage | null | undefined;
+    let blocks = blocksFromLegacy(layout, content, s.diagram).filter((b) => {
+      switch (b.type) {
+        case 'divider':
+        case 'diagram':
+        case 'image':
+          return true;
+        case 'list':
+          return b.items.length > 0;
+        case 'statistic':
+          return (b.stat + b.statLabel + b.body).trim().length > 0;
+        case 'quote':
+          return (b.text + b.author).trim().length > 0;
+        default:
+          return b.text.trim().length > 0;
+      }
+    });
+    let bgImage: SlideImage | null = null;
+    if (img && img.src) {
+      if (img.placement === 'background') {
+        bgImage = img;
+      } else {
+        const block = createBlock('image', { src: img.src, fit: img.fit ?? 'cover', imageHeight: img.size ?? 0.42 });
+        if (img.placement === 'top') blocks = [block, ...blocks];
+        else blocks = [...blocks, block];
+      }
+    }
+    if (!blocks.length) blocks = [pg('')];
     const oldBg = s.background as string | undefined;
     const background: Slide['background'] =
-      oldBg === 'solid' || oldBg === 'soft' || oldBg === 'gradient' ? oldBg : 'solid';
+      oldBg === 'soft' || oldBg === 'gradient' ? oldBg : 'solid';
     return {
       id: (s.id as string) ?? uid(),
-      layout: (wasImageLayout ? 'text' : (s.layout as LayoutId)) ?? 'text',
       align: (s.align as Slide['align']) ?? SLIDE_STYLE_DEFAULTS.align,
-      contentAnchor: SLIDE_STYLE_DEFAULTS.contentAnchor,
+      contentAnchor: (s.contentAnchor as Slide['contentAnchor']) ?? SLIDE_STYLE_DEFAULTS.contentAnchor,
       background,
-      image,
-      diagram: defaultDiagram(),
-      decorations: [],
-      eyebrowAlign: SLIDE_STYLE_DEFAULTS.eyebrowAlign,
-      eyebrowPlacement: SLIDE_STYLE_DEFAULTS.eyebrowPlacement,
-      content: { ...emptyContent(), ...content },
+      bgImage,
+      eyebrow: (content.eyebrow as string) ?? '',
+      eyebrowAlign: (s.eyebrowAlign as Slide['eyebrowAlign']) ?? SLIDE_STYLE_DEFAULTS.eyebrowAlign,
+      eyebrowPlacement: (s.eyebrowPlacement as Slide['eyebrowPlacement']) ?? SLIDE_STYLE_DEFAULTS.eyebrowPlacement,
+      reference: (content.reference as string) ?? '',
+      blocks,
+      decorations: (s.decorations as Decoration[]) ?? [],
       layers: { ...defaultLayers(), ...((s.layers as Partial<SlideLayers>) ?? {}) },
     } satisfies Slide;
   });
@@ -231,7 +291,7 @@ function migrateToV2(old: Record<string, unknown>): Carousel {
   };
 }
 
-/** Ensure a same-version carousel has every field a current Carousel expects. */
+/** Ensure a v3 carousel has every field current code expects (forward-compat). */
 function normalize(c: Record<string, unknown>): Carousel {
   const carousel = c as unknown as Carousel;
   return {
@@ -240,13 +300,11 @@ function normalize(c: Record<string, unknown>): Carousel {
     footerReversed: (c.footerReversed as boolean) ?? false,
     caption: (c.caption as string) ?? '',
     bands: (c.bands as Carousel['bands']) ?? [],
-    // `diagram`/`decorations`/`layers.swipe` were added after some v2 carousels
-    // were saved; merge defaults so older saves still get every field.
     slides: carousel.slides.map((s) => ({
       ...s,
-      diagram: { ...defaultDiagram(), ...(s.diagram ?? {}) },
       decorations: s.decorations ?? [],
       layers: { ...defaultLayers(), ...s.layers },
+      blocks: (s.blocks ?? []).map((b) => ({ ...createBlock(b.type), ...b, diagram: { ...defaultDiagram(), ...b.diagram } })),
     })),
   };
 }
@@ -258,8 +316,7 @@ function loadInitial(): Carousel {
       const parsed = JSON.parse(raw) as Record<string, unknown>;
       if (parsed && Array.isArray(parsed.slides) && parsed.slides.length) {
         if (parsed.version === SCHEMA_VERSION) return normalize(parsed);
-        // older schema — migrate so the user keeps their work
-        return migrateToV2(parsed);
+        return migrateToV3(parsed);
       }
     }
   } catch {
@@ -282,7 +339,6 @@ export function CarouselProvider({ children }: { children: ReactNode }) {
   const [carousel, dispatch] = useReducer(reducer, undefined, loadInitial);
   const [selectedId, setSelectedId] = useState<string | null>(() => carousel.slides[0]?.id ?? null);
 
-  // persist
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(carousel));
@@ -291,7 +347,6 @@ export function CarouselProvider({ children }: { children: ReactNode }) {
     }
   }, [carousel]);
 
-  // keep selection valid as slides come and go
   useEffect(() => {
     if (!carousel.slides.some((s) => s.id === selectedId)) {
       setSelectedId(carousel.slides[0]?.id ?? null);

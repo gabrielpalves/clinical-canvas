@@ -12,15 +12,29 @@ export type DesignModeId =
 /** Instagram-friendly output ratios. */
 export type AspectId = 'portrait' | 'square';
 
-/** The structural template a single slide uses. */
-export type LayoutId =
+/** Starter presets for a new slide — they just pre-fill a set of blocks. */
+export type PresetId =
   | 'cover'
   | 'text'
   | 'list'
   | 'quote'
   | 'statistic'
   | 'diagram'
-  | 'cta';
+  | 'cta'
+  | 'blank';
+
+/** The kinds of content block a slide can stack, in any order. */
+export type BlockType =
+  | 'heading'
+  | 'paragraph'
+  | 'list'
+  | 'quote'
+  | 'statistic'
+  | 'diagram'
+  | 'image'
+  | 'divider';
+
+export type HeadingSize = 'sm' | 'md' | 'lg' | 'xl';
 
 /** The clean vector figures available on a `diagram` slide. */
 export type DiagramType = 'matrix' | 'venn' | 'distribution' | 'cycle' | 'table';
@@ -181,38 +195,59 @@ export interface SlideLayers {
   swipe: boolean;
 }
 
-/** The editable content of a slide. Fields are used per-layout. */
-export interface SlideContent {
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-  body: string;
+/**
+ * One content block. A flat shape (rather than a strict union) so editing is
+ * simple; each block type reads the subset of fields it needs.
+ */
+export interface Block {
+  id: string;
+  type: BlockType;
+  /** alignment override; 'inherit' = follow the slide. */
+  align: ElementAlign;
+  /** per-block text size multiplier, applied on top of the defaults. */
+  scale: number;
+  /** heading / paragraph / quote text. */
+  text: string;
+  /** heading size. */
+  size: HeadingSize;
+  /** list */
   items: string[];
-  quote: string;
+  numbered: boolean;
+  /** quote */
   author: string;
+  /** statistic */
   stat: string;
   statLabel: string;
-  reference: string;
+  body: string;
+  /** diagram */
+  diagram: DiagramConfig;
+  /** image */
+  src: string | null;
+  fit: 'cover' | 'contain';
+  imageHeight: number;
+  caption: string;
+  captionPos: 'below' | 'above';
 }
 
 export interface Slide {
   id: string;
-  layout: LayoutId;
   /** default alignment for the slide's text. */
   align: TextAlign;
-  /** vertical position of the text block. */
+  /** vertical position of the content stack. */
   contentAnchor: VerticalAnchor;
   background: BackgroundStyle;
-  /** optional image, placed anywhere on the slide. */
-  image: SlideImage | null;
-  /** figure shown when layout === 'diagram'. */
-  diagram: DiagramConfig;
-  /** decorative shapes layered on the slide. */
-  decorations: Decoration[];
-  /** per-element overrides. */
+  /** optional full-bleed background image. */
+  bgImage: SlideImage | null;
+  /** slide-level eyebrow (above the blocks). */
+  eyebrow: string;
   eyebrowAlign: ElementAlign;
   eyebrowPlacement: EyebrowPlacement;
-  content: SlideContent;
+  /** slide-level "REF:" citation, shown above the footer. */
+  reference: string;
+  /** the ordered content blocks. */
+  blocks: Block[];
+  /** decorative shapes layered on the slide. */
+  decorations: Decoration[];
   layers: SlideLayers;
 }
 

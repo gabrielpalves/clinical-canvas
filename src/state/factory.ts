@@ -1,38 +1,25 @@
 import type {
   BackgroundStyle,
+  Block,
+  BlockType,
   Carousel,
   Decoration,
   DiagramConfig,
   ElementAlign,
   EyebrowPlacement,
-  LayoutId,
+  HeadingSize,
+  PresetId,
   Slide,
-  SlideContent,
   SlideImage,
   SlideLayers,
   TextAlign,
   VerticalAnchor,
 } from '../types';
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 export function uid(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
-}
-
-export function emptyContent(): SlideContent {
-  return {
-    eyebrow: '',
-    title: '',
-    subtitle: '',
-    body: '',
-    items: [],
-    quote: '',
-    author: '',
-    stat: '',
-    statLabel: '',
-    reference: '',
-  };
 }
 
 export function defaultLayers(): SlideLayers {
@@ -47,7 +34,6 @@ export function defaultLayers(): SlideLayers {
   };
 }
 
-/** Default styling/positioning of a slide — used as the "reset" baseline. */
 export interface SlideStyleDefaults {
   align: TextAlign;
   contentAnchor: VerticalAnchor;
@@ -115,122 +101,175 @@ export function defaultDecoration(kind: Decoration['kind']): Decoration {
   };
 }
 
-/** A fresh image with sensible defaults for a given placement. */
-export function defaultImage(src: string, placement: SlideImage['placement'] = 'background'): SlideImage {
+/** A background image with sensible defaults. */
+export function defaultImage(src: string): SlideImage {
   return {
     src,
-    placement,
+    placement: 'background',
     fit: 'cover',
     size: 0.5,
     focusX: 0.5,
     focusY: 0.5,
-    opacity: placement === 'background' ? 0.6 : 1,
-    overlay: placement === 'background' ? 0.35 : 0,
+    opacity: 0.6,
+    overlay: 0.35,
   };
 }
 
+// ---------------------------------------------------------------------------
+// blocks
+// ---------------------------------------------------------------------------
+
+export function createBlock(type: BlockType, patch: Partial<Block> = {}): Block {
+  return {
+    id: uid(),
+    type,
+    align: 'inherit',
+    scale: 1,
+    text: '',
+    size: 'md',
+    items: [],
+    numbered: true,
+    author: '',
+    stat: '',
+    statLabel: '',
+    body: '',
+    diagram: defaultDiagram(),
+    src: null,
+    fit: 'cover',
+    imageHeight: 0.42,
+    caption: '',
+    captionPos: 'below',
+    ...patch,
+  };
+}
+
+const heading = (text: string, size: HeadingSize = 'md') => createBlock('heading', { text, size });
+const paragraph = (text: string) => createBlock('paragraph', { text });
+const listBlock = (items: string[], numbered = true) => createBlock('list', { items, numbered });
+const quote = (text: string, author: string) => createBlock('quote', { text, author });
+const statistic = (stat: string, statLabel: string, body: string) =>
+  createBlock('statistic', { stat, statLabel, body });
+
 interface SlideSeed {
-  layout: LayoutId;
   align?: TextAlign;
   contentAnchor?: VerticalAnchor;
   background?: BackgroundStyle;
-  image?: SlideImage | null;
-  diagram?: Partial<DiagramConfig>;
+  bgImage?: SlideImage | null;
+  eyebrow?: string;
   eyebrowAlign?: ElementAlign;
   eyebrowPlacement?: EyebrowPlacement;
-  content?: Partial<SlideContent>;
+  reference?: string;
+  blocks?: Block[];
+  decorations?: Decoration[];
   layers?: Partial<SlideLayers>;
 }
 
-export function createSlide(seed: SlideSeed): Slide {
+export function createSlide(seed: SlideSeed = {}): Slide {
   return {
     id: uid(),
-    layout: seed.layout,
     align: seed.align ?? SLIDE_STYLE_DEFAULTS.align,
     contentAnchor: seed.contentAnchor ?? SLIDE_STYLE_DEFAULTS.contentAnchor,
     background: seed.background ?? SLIDE_STYLE_DEFAULTS.background,
-    image: seed.image ?? null,
-    diagram: { ...defaultDiagram(), ...seed.diagram },
-    decorations: [],
+    bgImage: seed.bgImage ?? null,
+    eyebrow: seed.eyebrow ?? '',
     eyebrowAlign: seed.eyebrowAlign ?? SLIDE_STYLE_DEFAULTS.eyebrowAlign,
     eyebrowPlacement: seed.eyebrowPlacement ?? SLIDE_STYLE_DEFAULTS.eyebrowPlacement,
-    content: { ...emptyContent(), ...seed.content },
+    reference: seed.reference ?? '',
+    blocks: seed.blocks ?? [],
+    decorations: seed.decorations ?? [],
     layers: { ...defaultLayers(), ...seed.layers },
   };
 }
 
-/** A blank slide of a given layout, with gentle placeholder copy. */
-export function blankSlide(layout: LayoutId): Slide {
-  const placeholders: Partial<Record<LayoutId, Partial<SlideContent>>> = {
-    cover: { eyebrow: 'Nova série', title: 'Seu título aqui', subtitle: 'Um subtítulo que convida à leitura.' },
-    text: { eyebrow: 'Contexto', title: 'Um ponto importante', body: 'Escreva aqui o seu texto. Respire entre as ideias.' },
-    list: { eyebrow: 'Na prática', title: 'Três caminhos', items: ['Primeiro passo', 'Segundo passo', 'Terceiro passo'] },
-    quote: { quote: 'Uma frase que vale a pausa.', author: 'Autor, Obra (ano)' },
-    statistic: { eyebrow: 'Evidência', stat: '70%', statLabel: 'do que descreve o dado', body: 'Uma frase de contexto sobre o número.' },
-    diagram: { eyebrow: 'Modelo', title: 'O título do diagrama' },
-    cta: { eyebrow: 'Para levar com você', title: 'Salve este post', subtitle: 'Compartilhe com quem precisa ler isto hoje.' },
-  };
-  return createSlide({ layout, content: placeholders[layout] });
+/** A new slide built from a starter preset. */
+export function presetSlide(preset: PresetId): Slide {
+  switch (preset) {
+    case 'cover':
+      return createSlide({
+        eyebrow: 'Nova série',
+        blocks: [heading('Seu título aqui', 'xl'), paragraph('Um subtítulo que convida à leitura.')],
+      });
+    case 'text':
+      return createSlide({
+        eyebrow: 'Contexto',
+        blocks: [heading('Um ponto importante', 'md'), paragraph('Escreva aqui o seu texto. Respire entre as ideias.')],
+      });
+    case 'list':
+      return createSlide({
+        eyebrow: 'Na prática',
+        blocks: [heading('Três caminhos', 'md'), listBlock(['Primeiro passo', 'Segundo passo', 'Terceiro passo'])],
+      });
+    case 'quote':
+      return createSlide({ blocks: [quote('Uma frase que vale a pausa.', 'Autor, Obra (ano)')] });
+    case 'statistic':
+      return createSlide({
+        eyebrow: 'Evidência',
+        blocks: [statistic('70%', 'do que descreve o dado', 'Uma frase de contexto sobre o número.')],
+      });
+    case 'diagram':
+      return createSlide({ eyebrow: 'Modelo', blocks: [heading('O título do diagrama', 'md'), createBlock('diagram')] });
+    case 'cta':
+      return createSlide({
+        align: 'center',
+        eyebrow: 'Para levar com você',
+        blocks: [heading('Salve este post', 'lg'), createBlock('divider'), paragraph('Compartilhe com quem precisa ler isto hoje.')],
+      });
+    case 'blank':
+    default:
+      return createSlide({ blocks: [paragraph('Novo texto…')] });
+  }
 }
 
 /** A finished-looking sample carousel so the app is useful on first open. */
 export function seedCarousel(): Carousel {
   const slides: Slide[] = [
     createSlide({
-      layout: 'cover',
-      align: 'left',
-      content: {
-        eyebrow: 'Regulação emocional · Vol. I',
-        title: 'O silêncio que antecede a emoção',
-        subtitle: 'Como a pausa muda a forma como você responde ao mundo.',
-      },
+      eyebrow: 'Regulação emocional · Vol. I',
+      blocks: [
+        heading('O silêncio que antecede a emoção', 'xl'),
+        paragraph('Como a pausa muda a forma como você responde ao mundo.'),
+      ],
     }),
     createSlide({
-      layout: 'text',
-      content: {
-        eyebrow: 'O ponto de partida',
-        title: 'Emoção não é inimiga',
-        body: 'Toda emoção carrega uma informação. Acolhê-la não é fraqueza — é o primeiro passo para escolher como agir, em vez de apenas reagir.',
-      },
+      eyebrow: 'O ponto de partida',
+      blocks: [
+        heading('Emoção não é inimiga', 'md'),
+        paragraph(
+          'Toda emoção carrega uma informação. Acolhê-la não é fraqueza — é o primeiro passo para escolher como agir, em vez de apenas reagir.',
+        ),
+      ],
     }),
     createSlide({
-      layout: 'list',
-      content: {
-        eyebrow: 'Na prática',
-        title: 'Três passos para regular',
-        items: [
+      eyebrow: 'Na prática',
+      blocks: [
+        heading('Três passos para regular', 'md'),
+        listBlock([
           'Nomeie o que você sente, sem julgamento.',
           'Respire devagar — alongue a expiração.',
           'Escolha uma ação alinhada aos seus valores.',
-        ],
-      },
+        ]),
+      ],
     }),
     createSlide({
-      layout: 'statistic',
       background: 'soft',
-      content: {
-        eyebrow: 'Evidência',
-        stat: '6 seg.',
-        statLabel: 'é o tempo médio de pico de uma emoção intensa',
-        body: 'Dar nome ao que se sente reduz a ativação da amígdala — a neurociência chama isso de "affect labeling".',
-        reference: 'Lieberman et al., 2007, Psychological Science.',
-      },
+      eyebrow: 'Evidência',
+      reference: 'Lieberman et al., 2007, Psychological Science.',
+      blocks: [
+        statistic(
+          '6 seg.',
+          'é o tempo médio de pico de uma emoção intensa',
+          'Dar nome ao que se sente reduz a ativação da amígdala — a neurociência chama isso de "affect labeling".',
+        ),
+      ],
     }),
     createSlide({
-      layout: 'quote',
       background: 'soft',
-      content: {
-        quote: 'Acolher suas emoções não é sinal de fraqueza, mas o caminho mais seguro para encontrar a sua força.',
-        author: 'Laísa Bitencourt',
-      },
+      blocks: [quote('Acolher suas emoções não é sinal de fraqueza, mas o caminho mais seguro para encontrar a sua força.', 'Laísa Bitencourt')],
     }),
     createSlide({
-      layout: 'cta',
-      content: {
-        eyebrow: 'Para levar com você',
-        title: 'Salve para os dias difíceis',
-        subtitle: 'Compartilhe com alguém que precisa ler isto hoje. ↗',
-      },
+      align: 'center',
+      eyebrow: 'Para levar com você',
+      blocks: [heading('Salve para os dias difíceis', 'lg'), createBlock('divider'), paragraph('Compartilhe com alguém que precisa ler isto hoje. ↗')],
     }),
   ];
 
