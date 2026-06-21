@@ -39,7 +39,7 @@ type Action =
   | { type: 'reset' }
   | { type: 'setMode'; mode: DesignModeId }
   | { type: 'setAspect'; aspect: AspectId }
-  | { type: 'setMeta'; patch: Partial<Pick<Carousel, 'handle' | 'brandName' | 'logoSrc' | 'caption'>> }
+  | { type: 'setMeta'; patch: Partial<Pick<Carousel, 'handle' | 'brandName' | 'logoSrc' | 'caption' | 'footerReversed'>> }
   | { type: 'applyTemplate'; slides: Slide[]; caption: string }
   | { type: 'addSlide'; layout: LayoutId; afterId?: string }
   | { type: 'duplicateSlide'; id: string }
@@ -224,6 +224,7 @@ function migrateToV2(old: Record<string, unknown>): Carousel {
     handle: (old.handle as string) ?? '@psilaisabitencourt',
     brandName: (old.brandName as string) ?? 'Laísa Bitencourt · Psicóloga',
     logoSrc: (old.logoSrc as string | null) ?? null,
+    footerReversed: (old.footerReversed as boolean) ?? false,
     caption: (old.caption as string) ?? '',
     slides,
     bands: (old.bands as Carousel['bands']) ?? [],
@@ -236,14 +237,16 @@ function normalize(c: Record<string, unknown>): Carousel {
   return {
     ...carousel,
     logoSrc: (c.logoSrc as string | null) ?? null,
+    footerReversed: (c.footerReversed as boolean) ?? false,
     caption: (c.caption as string) ?? '',
     bands: (c.bands as Carousel['bands']) ?? [],
-    // `diagram`/`decorations` were added after some v2 carousels were saved;
-    // merge defaults so saves made before newer options still get every field.
+    // `diagram`/`decorations`/`layers.swipe` were added after some v2 carousels
+    // were saved; merge defaults so older saves still get every field.
     slides: carousel.slides.map((s) => ({
       ...s,
       diagram: { ...defaultDiagram(), ...(s.diagram ?? {}) },
       decorations: s.decorations ?? [],
+      layers: { ...defaultLayers(), ...s.layers },
     })),
   };
 }

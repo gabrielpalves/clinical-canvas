@@ -43,6 +43,7 @@ export function defaultLayers(): SlideLayers {
     decorativeMark: true,
     reference: true,
     logo: true,
+    swipe: false,
   };
 }
 
@@ -95,15 +96,19 @@ export function defaultDiagram(): DiagramConfig {
   };
 }
 
+const ICON_KINDS: Decoration['kind'][] = ['heart', 'comment', 'share', 'bookmark'];
+
 export function defaultDecoration(kind: Decoration['kind']): Decoration {
+  const isBlob = kind === 'blobA' || kind === 'blobB';
+  const isIcon = ICON_KINDS.includes(kind);
   return {
     id: uid(),
     kind,
     x: 0.5,
     y: 0.5,
-    size: 0.28,
+    size: isIcon ? 0.12 : 0.28,
     rotation: 0,
-    opacity: kind === 'blobA' || kind === 'blobB' ? 0.18 : 0.5,
+    opacity: isBlob ? 0.18 : isIcon ? 0.85 : 0.5,
     color: 'accent',
     filled: kind === 'blobA' || kind === 'blobB' || kind === 'circle' || kind === 'triangle',
     front: false,
@@ -236,6 +241,7 @@ export function seedCarousel(): Carousel {
     handle: '@psilaisabitencourt',
     brandName: 'Laísa Bitencourt · Psicóloga',
     logoSrc: null,
+    footerReversed: false,
     caption:
       'O silêncio que antecede a emoção 🌿\n\n' +
       'Toda emoção carrega uma informação. Aprender a fazer uma pausa antes de reagir é uma das habilidades mais transformadoras da regulação emocional.\n\n' +

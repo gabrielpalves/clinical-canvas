@@ -234,24 +234,42 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
         </div>
       )}
 
+      {L.swipe && (
+        <span className="cc-swipe" aria-hidden>
+          <span className="cc-swipe__label">arraste</span>
+          <svg viewBox="0 0 40 24" className="cc-swipe__icon" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 12 H30 M22 5 L31 12 L22 19" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+      )}
+
       <footer className="cc-footer">
-        {L.logo ? (
-          carousel.logoSrc ? (
-            <img className="cc-logo" src={carousel.logoSrc} alt={carousel.brandName} />
-          ) : (
-            <span className="cc-brand">{carousel.brandName}</span>
-          )
-        ) : (
-          <span />
-        )}
-        <span className="cc-footer__right">
-          {L.logo && carousel.handle && <span className="cc-handle">{carousel.handle}</span>}
-          {L.pagination && (
+        {(() => {
+          const brand = L.logo ? (
+            carousel.logoSrc ? (
+              <img className="cc-logo" src={carousel.logoSrc} alt={carousel.brandName} />
+            ) : (
+              <span className="cc-brand">{carousel.brandName}</span>
+            )
+          ) : null;
+          const handle = L.logo && carousel.handle ? <span className="cc-handle">{carousel.handle}</span> : null;
+          const page = L.pagination ? (
             <span className="cc-page">
               {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
             </span>
-          )}
-        </span>
+          ) : null;
+          const leftEl = carousel.footerReversed ? handle : brand;
+          const rightEl = carousel.footerReversed ? brand : handle;
+          return (
+            <>
+              {leftEl ?? <span />}
+              <span className="cc-footer__right">
+                {rightEl}
+                {page}
+              </span>
+            </>
+          );
+        })()}
       </footer>
 
       <Decorations

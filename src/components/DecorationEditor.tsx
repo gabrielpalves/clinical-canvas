@@ -12,6 +12,10 @@ const KIND_LABELS: Record<Decoration['kind'], string> = {
   arrow: 'Seta',
   plus: 'Cruz',
   asterisk: 'Asterisco',
+  heart: 'Curtir (coração)',
+  comment: 'Comentar',
+  share: 'Compartilhar',
+  bookmark: 'Salvar',
 };
 
 const COLORS: Array<{ id: Decoration['color']; label: string }> = [

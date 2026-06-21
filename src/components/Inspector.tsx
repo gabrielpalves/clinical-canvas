@@ -74,6 +74,10 @@ const DECORATIONS: Array<{ id: DecorationKind; label: string }> = [
   { id: 'arrow', label: 'Seta' },
   { id: 'plus', label: 'Cruz' },
   { id: 'asterisk', label: 'Asterisco' },
+  { id: 'heart', label: '♥ Curtir' },
+  { id: 'comment', label: '💬 Comentar' },
+  { id: 'share', label: '➤ Compartilhar' },
+  { id: 'bookmark', label: '🔖 Salvar' },
 ];
 
 const EYEBROW_ALIGNS: Array<{ id: ElementAlign; label: string }> = [
@@ -90,6 +94,7 @@ const LAYER_LABELS: Array<{ key: keyof SlideLayers; label: string }> = [
   { key: 'reference', label: 'Rodapé "REF:"' },
   { key: 'pagination', label: 'Numeração' },
   { key: 'logo', label: 'Assinatura / @' },
+  { key: 'swipe', label: 'Seta "arraste"' },
 ];
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -775,6 +780,18 @@ export function Inspector() {
         <Field label="@ do Instagram">
           <input className="input" value={carousel.handle}
             onChange={(e) => dispatch({ type: 'setMeta', patch: { handle: e.target.value } })} />
+        </Field>
+        <Field label="Ordem no rodapé">
+          <div className="seg">
+            <button className={`seg__btn${!carousel.footerReversed ? ' is-active' : ''}`}
+              onClick={() => dispatch({ type: 'setMeta', patch: { footerReversed: false } })}>
+              Assinatura · @
+            </button>
+            <button className={`seg__btn${carousel.footerReversed ? ' is-active' : ''}`}
+              onClick={() => dispatch({ type: 'setMeta', patch: { footerReversed: true } })}>
+              @ · Assinatura
+            </button>
+          </div>
         </Field>
         <div className="field">
           <span className="field__label">Logo (substitui a assinatura no rodapé)</span>

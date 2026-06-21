@@ -32,6 +32,14 @@ function Shape({ kind, filled }: { kind: DecorationKind; filled: boolean }) {
       return <path d="M0,-48 C28,-50 52,-26 46,2 C40,30 18,50 -8,46 C-36,42 -52,18 -44,-12 C-38,-36 -24,-46 0,-48 Z" fill={fill} stroke={stroke} strokeWidth={sw} />;
     case 'blobB':
       return <path d="M-6,-46 C24,-52 50,-30 48,-2 C46,26 30,52 0,48 C-30,44 -50,22 -46,-8 C-43,-34 -28,-42 -6,-46 Z" fill={fill} stroke={stroke} strokeWidth={sw} />;
+    case 'heart':
+      return <path d="M0,44 C-10,33 -44,12 -44,-14 C-44,-30 -30,-42 -14,-34 C-6,-30 0,-22 0,-22 C0,-22 6,-30 14,-34 C30,-42 44,-30 44,-14 C44,12 10,33 0,44 Z" fill={fill} stroke={stroke} strokeWidth={sw} strokeLinejoin="round" />;
+    case 'comment':
+      return <path d="M-28,-36 H28 A14,14 0 0 1 42,-22 V8 A14,14 0 0 1 28,22 H-4 L-26,42 L-20,22 H-28 A14,14 0 0 1 -42,8 V-22 A14,14 0 0 1 -28,-36 Z" fill={fill} stroke={stroke} strokeWidth={sw} strokeLinejoin="round" />;
+    case 'share':
+      return <path d="M-44,-36 L44,0 L-44,36 L-44,8 L6,0 L-44,-8 Z" fill={fill} stroke={stroke} strokeWidth={sw} strokeLinejoin="round" />;
+    case 'bookmark':
+      return <path d="M-26,-40 L26,-40 L26,40 L0,22 L-26,40 Z" fill={fill} stroke={stroke} strokeWidth={sw} strokeLinejoin="round" />;
     default:
       return null;
   }

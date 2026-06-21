@@ -94,7 +94,12 @@ export type DecorationKind =
   | 'arrow'
   | 'plus'
   | 'asterisk'
-  | 'leaf';
+  | 'leaf'
+  // Instagram-style action icons
+  | 'heart'
+  | 'comment'
+  | 'share'
+  | 'bookmark';
 
 export interface Decoration {
   id: string;
@@ -172,6 +177,8 @@ export interface SlideLayers {
   decorativeMark: boolean;
   reference: boolean;
   logo: boolean;
+  /** "swipe / arraste" hint arrow. */
+  swipe: boolean;
 }
 
 /** The editable content of a slide. Fields are used per-layout. */
@@ -218,6 +225,8 @@ export interface Carousel {
   brandName: string;
   /** optional logo image shown in the footer instead of the signature text. */
   logoSrc: string | null;
+  /** swap the footer: handle on the left, signature on the right. */
+  footerReversed: boolean;
   /** the Instagram caption (+ hashtags); exported alongside the images. */
   caption: string;
   slides: Slide[];
