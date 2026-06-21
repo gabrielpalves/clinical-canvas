@@ -134,7 +134,8 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
     <div
       className="cc-frame"
       data-mode={carousel.mode}
-      data-bg={slide.background}
+      data-bg={slide.bgColor === 'auto' ? slide.background : 'solid'}
+      data-bgcolor={slide.bgColor}
       data-align={slide.align}
       data-aspect={carousel.aspect}
       data-export-id={slide.id}

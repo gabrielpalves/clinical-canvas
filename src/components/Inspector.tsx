@@ -5,6 +5,7 @@ import { BLOCK_TYPES } from '../designModes';
 import { bandForSlide, fileToDataUrl } from '../lib/helpers';
 import type {
   BackgroundStyle,
+  BgColor,
   DecorationKind,
   ElementAlign,
   EyebrowPlacement,
@@ -21,6 +22,15 @@ const BACKGROUNDS: Array<{ id: BackgroundStyle; label: string }> = [
   { id: 'solid', label: 'Sólido' },
   { id: 'soft', label: 'Suave' },
   { id: 'gradient', label: 'Gradiente' },
+];
+const BG_COLORS: Array<{ id: BgColor; label: string; color?: string }> = [
+  { id: 'auto', label: 'Auto (segue o modo)' },
+  { id: 'offwhite', label: 'Off-white', color: '#FAFAF8' },
+  { id: 'beige', label: 'Bege', color: '#F2EFE9' },
+  { id: 'gold', label: 'Dourado', color: '#D4B985' },
+  { id: 'brown', label: 'Marrom', color: '#5D4037' },
+  { id: 'wine', label: 'Vinho', color: '#682D36' },
+  { id: 'blue', label: 'Azul-noite', color: '#131736' },
 ];
 const ALIGNS: Array<{ id: TextAlign; label: string }> = [
   { id: 'left', label: 'Esquerda' },
@@ -90,7 +100,7 @@ export function Inspector() {
   const bg = slide.bgImage;
 
   const setField = (
-    patch: Partial<Pick<Slide, 'align' | 'contentAnchor' | 'background' | 'eyebrowAlign' | 'eyebrowPlacement' | 'eyebrow' | 'reference'>>,
+    patch: Partial<Pick<Slide, 'align' | 'contentAnchor' | 'background' | 'bgColor' | 'eyebrowAlign' | 'eyebrowPlacement' | 'eyebrow' | 'reference'>>,
   ) => dispatch({ type: 'updateSlide', id, patch });
   const setLayer = (key: keyof SlideLayers, value: boolean) => dispatch({ type: 'updateLayers', id, patch: { [key]: value } });
 
@@ -200,13 +210,31 @@ export function Inspector() {
             ))}
           </div>
         </Field>
-        <Field label="Fundo">
-          <div className="seg">
-            {BACKGROUNDS.map((b) => (
-              <button key={b.id} className={`seg__btn${slide.background === b.id ? ' is-active' : ''}`} onClick={() => setField({ background: b.id })}>{b.label}</button>
-            ))}
+        <Field label="Cor do fundo">
+          <div className="swatch-row">
+            {BG_COLORS.map((c) =>
+              c.id === 'auto' ? (
+                <button key={c.id} type="button" title={c.label}
+                  className={`swatch swatch--auto${slide.bgColor === c.id ? ' is-active' : ''}`}
+                  onClick={() => setField({ bgColor: c.id })}>Auto</button>
+              ) : (
+                <button key={c.id} type="button" title={c.label}
+                  className={`swatch${slide.bgColor === c.id ? ' is-active' : ''}`}
+                  style={{ background: c.color }}
+                  onClick={() => setField({ bgColor: c.id })} />
+              ),
+            )}
           </div>
         </Field>
+        {slide.bgColor === 'auto' && (
+          <Field label="Tratamento do fundo">
+            <div className="seg">
+              {BACKGROUNDS.map((b) => (
+                <button key={b.id} className={`seg__btn${slide.background === b.id ? ' is-active' : ''}`} onClick={() => setField({ background: b.id })}>{b.label}</button>
+              ))}
+            </div>
+          </Field>
+        )}
         <button className="btn btn--ghost btn--sm" onClick={() => dispatch({ type: 'resetSlide', id })}>
           <RotateCcw size={14} /> Restaurar padrão do slide
         </button>

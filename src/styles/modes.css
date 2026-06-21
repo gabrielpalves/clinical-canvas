@@ -116,6 +116,65 @@
 }
 
 /* ==========================================================================
+   Per-slide brand background colours (override the mode's palette + remap text
+   for legibility). Placed after the mode palettes so they win.
+   ========================================================================== */
+.cc-frame[data-bgcolor='offwhite'] {
+  --cc-bg: #fafaf8;
+  --cc-heading: #5d4037;
+  --cc-ink: #433430;
+  --cc-accent: #bfa065;
+  --cc-accent-soft: #e8dcc2;
+  --cc-muted: #9a8c7e;
+  --cc-line: rgba(93, 64, 55, 0.16);
+}
+.cc-frame[data-bgcolor='beige'] {
+  --cc-bg: #f2efe9;
+  --cc-heading: #5d4037;
+  --cc-ink: #433430;
+  --cc-accent: #bfa065;
+  --cc-accent-soft: #e3d6bd;
+  --cc-muted: #9a8c7e;
+  --cc-line: rgba(93, 64, 55, 0.18);
+}
+.cc-frame[data-bgcolor='gold'] {
+  --cc-bg: #d4b985;
+  --cc-heading: #4a3127;
+  --cc-ink: #4a3a30;
+  --cc-accent: #5d4037;
+  --cc-accent-soft: rgba(93, 64, 55, 0.22);
+  --cc-muted: #7a6750;
+  --cc-line: rgba(74, 49, 39, 0.28);
+}
+.cc-frame[data-bgcolor='brown'] {
+  --cc-bg: #5d4037;
+  --cc-heading: #fdfaf4;
+  --cc-ink: #f2efe9;
+  --cc-accent: #d4b985;
+  --cc-accent-soft: rgba(212, 185, 133, 0.28);
+  --cc-muted: rgba(242, 239, 233, 0.72);
+  --cc-line: rgba(242, 239, 233, 0.26);
+}
+.cc-frame[data-bgcolor='wine'] {
+  --cc-bg: #682d36;
+  --cc-heading: #fdf6f2;
+  --cc-ink: #f3e7e3;
+  --cc-accent: #d4b985;
+  --cc-accent-soft: rgba(212, 185, 133, 0.28);
+  --cc-muted: rgba(243, 231, 227, 0.72);
+  --cc-line: rgba(243, 231, 227, 0.24);
+}
+.cc-frame[data-bgcolor='blue'] {
+  --cc-bg: #131736;
+  --cc-heading: #ffffff;
+  --cc-ink: #e9e8f0;
+  --cc-accent: #d4b985;
+  --cc-accent-soft: rgba(212, 185, 133, 0.28);
+  --cc-muted: rgba(233, 232, 240, 0.7);
+  --cc-line: rgba(233, 232, 240, 0.22);
+}
+
+/* ==========================================================================
    Background accents (toggle: backgroundAccents) + grain
    ========================================================================== */
 .cc-accents {

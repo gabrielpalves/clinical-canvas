@@ -1,5 +1,6 @@
 import type {
   BackgroundStyle,
+  BgColor,
   Block,
   BlockType,
   Carousel,
@@ -38,6 +39,7 @@ export interface SlideStyleDefaults {
   align: TextAlign;
   contentAnchor: VerticalAnchor;
   background: BackgroundStyle;
+  bgColor: BgColor;
   eyebrowAlign: ElementAlign;
   eyebrowPlacement: EyebrowPlacement;
 }
@@ -46,6 +48,7 @@ export const SLIDE_STYLE_DEFAULTS: SlideStyleDefaults = {
   align: 'left',
   contentAnchor: 'center',
   background: 'solid',
+  bgColor: 'auto',
   eyebrowAlign: 'inherit',
   eyebrowPlacement: 'inline',
 };
@@ -154,6 +157,7 @@ interface SlideSeed {
   align?: TextAlign;
   contentAnchor?: VerticalAnchor;
   background?: BackgroundStyle;
+  bgColor?: BgColor;
   bgImage?: SlideImage | null;
   eyebrow?: string;
   eyebrowAlign?: ElementAlign;
@@ -170,6 +174,7 @@ export function createSlide(seed: SlideSeed = {}): Slide {
     align: seed.align ?? SLIDE_STYLE_DEFAULTS.align,
     contentAnchor: seed.contentAnchor ?? SLIDE_STYLE_DEFAULTS.contentAnchor,
     background: seed.background ?? SLIDE_STYLE_DEFAULTS.background,
+    bgColor: seed.bgColor ?? SLIDE_STYLE_DEFAULTS.bgColor,
     bgImage: seed.bgImage ?? null,
     eyebrow: seed.eyebrow ?? '',
     eyebrowAlign: seed.eyebrowAlign ?? SLIDE_STYLE_DEFAULTS.eyebrowAlign,

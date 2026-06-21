@@ -146,6 +146,10 @@ export type EyebrowPlacement = 'inline' | 'top';
 /** How a slide paints its background. Lets the user kill gradients etc. */
 export type BackgroundStyle = 'solid' | 'soft' | 'gradient';
 
+/** A per-slide background fill from the brand palette. 'auto' follows the mode
+ *  (and uses BackgroundStyle); the others set a fixed colour with legible text. */
+export type BgColor = 'auto' | 'offwhite' | 'beige' | 'gold' | 'brown' | 'wine' | 'blue';
+
 /** Where an image lives on a slide. Non-background placements reflow the text. */
 export type ImagePlacement = 'background' | 'left' | 'right' | 'top' | 'bottom';
 
@@ -236,6 +240,8 @@ export interface Slide {
   /** vertical position of the content stack. */
   contentAnchor: VerticalAnchor;
   background: BackgroundStyle;
+  /** brand-palette background fill ('auto' = follow the mode). */
+  bgColor: BgColor;
   /** optional full-bleed background image. */
   bgImage: SlideImage | null;
   /** slide-level eyebrow (above the blocks). */

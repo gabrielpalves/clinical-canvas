@@ -37,7 +37,7 @@ const STORAGE_KEY = 'clinical-canvas:carousel:v1';
 type SlideFieldPatch = Partial<
   Pick<
     Slide,
-    'align' | 'contentAnchor' | 'background' | 'eyebrowAlign' | 'eyebrowPlacement' | 'eyebrow' | 'reference'
+    'align' | 'contentAnchor' | 'background' | 'bgColor' | 'eyebrowAlign' | 'eyebrowPlacement' | 'eyebrow' | 'reference'
   >
 >;
 
@@ -267,6 +267,7 @@ function migrateToV3(old: Record<string, unknown>): Carousel {
       align: (s.align as Slide['align']) ?? SLIDE_STYLE_DEFAULTS.align,
       contentAnchor: (s.contentAnchor as Slide['contentAnchor']) ?? SLIDE_STYLE_DEFAULTS.contentAnchor,
       background,
+      bgColor: (s.bgColor as Slide['bgColor']) ?? 'auto',
       bgImage,
       eyebrow: (content.eyebrow as string) ?? '',
       eyebrowAlign: (s.eyebrowAlign as Slide['eyebrowAlign']) ?? SLIDE_STYLE_DEFAULTS.eyebrowAlign,
@@ -302,6 +303,7 @@ function normalize(c: Record<string, unknown>): Carousel {
     bands: (c.bands as Carousel['bands']) ?? [],
     slides: carousel.slides.map((s) => ({
       ...s,
+      bgColor: s.bgColor ?? 'auto',
       decorations: s.decorations ?? [],
       layers: { ...defaultLayers(), ...s.layers },
       blocks: (s.blocks ?? []).map((b) => ({ ...createBlock(b.type), ...b, diagram: { ...defaultDiagram(), ...b.diagram } })),
