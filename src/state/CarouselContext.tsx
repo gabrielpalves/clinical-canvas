@@ -309,15 +309,18 @@ function normalize(c: Record<string, unknown>): Carousel {
   };
 }
 
+/** Turn an arbitrary parsed object into a valid current-schema carousel. */
+export function coerceCarousel(parsed: Record<string, unknown>): Carousel | null {
+  if (!parsed || !Array.isArray(parsed.slides) || !parsed.slides.length) return null;
+  return parsed.version === SCHEMA_VERSION ? normalize(parsed) : migrateToV3(parsed);
+}
+
 function loadInitial(): Carousel {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      const parsed = JSON.parse(raw) as Record<string, unknown>;
-      if (parsed && Array.isArray(parsed.slides) && parsed.slides.length) {
-        if (parsed.version === SCHEMA_VERSION) return normalize(parsed);
-        return migrateToV3(parsed);
-      }
+      const coerced = coerceCarousel(JSON.parse(raw) as Record<string, unknown>);
+      if (coerced) return coerced;
     }
   } catch {
     /* ignore corrupt storage */

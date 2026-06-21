@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { Download, Eye, FileImage, Package, RotateCcw } from 'lucide-react';
-import { useCarousel } from '../state/CarouselContext';
+import { useRef, useState } from 'react';
+import { Download, Eye, FileImage, FolderOpen, Package, RotateCcw, Save } from 'lucide-react';
+import { coerceCarousel, useCarousel } from '../state/CarouselContext';
 import { DESIGN_MODES } from '../designModes';
-import { DIMENSIONS } from '../lib/helpers';
+import { DIMENSIONS, slugify } from '../lib/helpers';
 import { exportCarouselZip, exportSlidePng } from '../lib/exporter';
 import { TemplatesMenu } from './TemplatesMenu';
 import type { AspectId } from '../types';
@@ -10,6 +10,35 @@ import type { AspectId } from '../types';
 export function Toolbar({ onPreview }: { onPreview: () => void }) {
   const { carousel, dispatch, selectedId } = useCarousel();
   const [busy, setBusy] = useState<null | string>(null);
+  const openRef = useRef<HTMLInputElement>(null);
+
+  const saveProject = () => {
+    const blob = new Blob([JSON.stringify(carousel, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `${slugify(carousel.brandName, 'carrossel')}-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  };
+
+  const openProject = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const carouselIn = coerceCarousel(JSON.parse(await file.text()));
+      if (!carouselIn) throw new Error('invalid');
+      if (confirm('Abrir este projeto substituirá o carrossel atual. Continuar?')) {
+        dispatch({ type: 'load', carousel: carouselIn });
+      }
+    } catch {
+      alert('Arquivo inválido. Selecione um projeto .json exportado pelo Clinical Canvas.');
+    }
+  };
 
   const exportCurrent = async () => {
     if (!selectedId) return;
@@ -89,6 +118,13 @@ export function Toolbar({ onPreview }: { onPreview: () => void }) {
         </div>
 
         <TemplatesMenu />
+        <input ref={openRef} type="file" accept="application/json,.json" hidden onChange={openProject} />
+        <button className="btn btn--ghost" onClick={() => openRef.current?.click()} title="Abrir projeto (.json)">
+          <FolderOpen size={16} /> Abrir
+        </button>
+        <button className="btn btn--ghost" onClick={saveProject} title="Salvar projeto (.json)">
+          <Save size={16} /> Salvar
+        </button>
         <button className="btn btn--ghost" onClick={onPreview} title="Pré-visualizar">
           <Eye size={16} /> Prévia
         </button>
