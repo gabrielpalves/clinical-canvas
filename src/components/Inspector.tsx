@@ -136,6 +136,7 @@ export function Inspector() {
       {/* content blocks */}
       <section className="inspector__section">
         <h3 className="section__title">Conteúdo</h3>
+        <p className="section__hint">Selecione o texto e use <b>B</b> / <i>I</i> / <span style={{ background: 'var(--gold-soft)', padding: '0 3px', borderRadius: 3 }}>H</span>, ou escreva <code>*negrito*</code>, <code>_itálico_</code>, <code>==destaque==</code>.</p>
         {slide.blocks.map((block, i) => (
           <BlockEditor
             key={block.id}

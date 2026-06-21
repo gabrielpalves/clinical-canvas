@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, ImagePlus, Plus, Trash2, X } from 'lucide-react';
 import type { Block, DiagramConfig, ElementAlign, HeadingSize } from '../types';
 import { fileToDataUrl } from '../lib/helpers';
 import { DiagramFields } from './DiagramFields';
+import { MarkupField } from './MarkupField';
 
 const TYPE_LABEL: Record<Block['type'], string> = {
   heading: 'Título',
@@ -80,7 +81,7 @@ export function BlockEditor({ block, index, total, onPatch, onDiagram, onMove, o
 
       {block.type === 'heading' && (
         <>
-          <textarea className="input" rows={2} value={block.text} onChange={(e) => onPatch({ text: e.target.value })} />
+          <MarkupField multiline rows={2} value={block.text} onChange={(v) => onPatch({ text: v })} />
           <div className="seg seg--sm" style={{ marginTop: 8 }}>
             {HEADING_SIZES.map((s) => (
               <button key={s.id} className={`seg__btn${block.size === s.id ? ' is-active' : ''}`} onClick={() => onPatch({ size: s.id })}>{s.label}</button>
@@ -90,12 +91,12 @@ export function BlockEditor({ block, index, total, onPatch, onDiagram, onMove, o
       )}
 
       {block.type === 'paragraph' && (
-        <textarea className="input" rows={4} value={block.text} onChange={(e) => onPatch({ text: e.target.value })} />
+        <MarkupField multiline rows={4} value={block.text} onChange={(v) => onPatch({ text: v })} />
       )}
 
       {block.type === 'quote' && (
         <>
-          <textarea className="input" rows={3} value={block.text} onChange={(e) => onPatch({ text: e.target.value })} placeholder="A citação" />
+          <MarkupField multiline rows={3} value={block.text} onChange={(v) => onPatch({ text: v })} placeholder="A citação" />
           <input className="input" style={{ marginTop: 8 }} value={block.author} onChange={(e) => onPatch({ author: e.target.value })} placeholder="Autoria" />
         </>
       )}
@@ -103,8 +104,12 @@ export function BlockEditor({ block, index, total, onPatch, onDiagram, onMove, o
       {block.type === 'statistic' && (
         <>
           <input className="input" value={block.stat} onChange={(e) => onPatch({ stat: e.target.value })} placeholder="Número / dado" />
-          <textarea className="input" style={{ marginTop: 8 }} rows={2} value={block.statLabel} onChange={(e) => onPatch({ statLabel: e.target.value })} placeholder="Legenda do dado" />
-          <textarea className="input" style={{ marginTop: 8 }} rows={2} value={block.body} onChange={(e) => onPatch({ body: e.target.value })} placeholder="Texto de apoio (opcional)" />
+          <div style={{ marginTop: 8 }}>
+            <MarkupField multiline rows={2} value={block.statLabel} onChange={(v) => onPatch({ statLabel: v })} placeholder="Legenda do dado" />
+          </div>
+          <div style={{ marginTop: 8 }}>
+            <MarkupField multiline rows={2} value={block.body} onChange={(v) => onPatch({ body: v })} placeholder="Texto de apoio (opcional)" />
+          </div>
         </>
       )}
 
@@ -116,13 +121,15 @@ export function BlockEditor({ block, index, total, onPatch, onDiagram, onMove, o
           </label>
           <div className="items">
             {block.items.map((item, i) => (
-              <div key={i} className="items__row">
+              <div key={i} className="items__row items__row--mk">
                 <span className="items__num">{block.numbered ? i + 1 : '•'}</span>
-                <input className="input" value={item} onChange={(e) => {
-                  const items = [...block.items];
-                  items[i] = e.target.value;
-                  onPatch({ items });
-                }} />
+                <div className="items__field">
+                  <MarkupField value={item} onChange={(v) => {
+                    const items = [...block.items];
+                    items[i] = v;
+                    onPatch({ items });
+                  }} />
+                </div>
                 <button className="icon-btn icon-btn--danger" title="Remover item" onClick={() => onPatch({ items: block.items.filter((_, j) => j !== i) })}><X size={14} /></button>
               </div>
             ))}
@@ -154,10 +161,10 @@ export function BlockEditor({ block, index, total, onPatch, onDiagram, onMove, o
             <span className="field__label">Altura: {Math.round(block.imageHeight * 100)}% da slide</span>
             <input type="range" min={15} max={80} value={Math.round(block.imageHeight * 100)} onChange={(e) => onPatch({ imageHeight: Number(e.target.value) / 100 })} />
           </label>
-          <label className="field">
+          <div className="field">
             <span className="field__label">Legenda</span>
-            <input className="input" value={block.caption} onChange={(e) => onPatch({ caption: e.target.value })} placeholder="Legenda da imagem (opcional)" />
-          </label>
+            <MarkupField value={block.caption} onChange={(v) => onPatch({ caption: v })} placeholder="Legenda da imagem (opcional)" />
+          </div>
           <div className="seg seg--sm">
             {(['above', 'below'] as const).map((p) => (
               <button key={p} className={`seg__btn${block.captionPos === p ? ' is-active' : ''}`} onClick={() => onPatch({ captionPos: p })}>{p === 'above' ? 'Legenda acima' : 'Legenda abaixo'}</button>

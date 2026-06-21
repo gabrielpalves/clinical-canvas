@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import type { Block, Carousel, ElementAlign, Slide } from '../types';
 import { DIMENSIONS, bandForSlide } from '../lib/helpers';
+import { renderRich } from '../lib/richText';
 import { Diagram } from './Diagram';
 import { Decorations } from './Decorations';
 
@@ -11,7 +12,7 @@ function Paragraphs({ text }: { text: string }) {
   return (
     <>
       {parts.map((p, i) => (
-        <p key={i}>{p}</p>
+        <p key={i}>{renderRich(p)}</p>
       ))}
     </>
   );
@@ -25,7 +26,7 @@ function BlockView({ block, slideAlign, frameH }: { block: Block; slideAlign: Sl
   let inner: React.ReactNode = null;
   switch (block.type) {
     case 'heading':
-      inner = <h2 className="cc-h" style={fz(HEADING_PX[block.size])}>{block.text}</h2>;
+      inner = <h2 className="cc-h" style={fz(HEADING_PX[block.size])}>{renderRich(block.text)}</h2>;
       break;
     case 'paragraph':
       inner = <div className="cc-p" style={fz(36)}><Paragraphs text={block.text} /></div>;
@@ -40,7 +41,7 @@ function BlockView({ block, slideAlign, frameH }: { block: Block; slideAlign: Sl
               ) : (
                 <span className="cc-list__dot" aria-hidden />
               )}
-              <span className="cc-list__text" style={fz(37)}>{item}</span>
+              <span className="cc-list__text" style={fz(37)}>{renderRich(item)}</span>
             </li>
           ))}
         </ol>
@@ -49,7 +50,7 @@ function BlockView({ block, slideAlign, frameH }: { block: Block; slideAlign: Sl
     case 'quote':
       inner = (
         <>
-          <blockquote className="cc-quote" style={fz(70)}>{block.text}</blockquote>
+          <blockquote className="cc-quote" style={fz(70)}>{renderRich(block.text)}</blockquote>
           {block.author && <cite className="cc-cite" style={fz(28)}>— {block.author}</cite>}
         </>
       );
@@ -58,7 +59,7 @@ function BlockView({ block, slideAlign, frameH }: { block: Block; slideAlign: Sl
       inner = (
         <>
           <span className="cc-stat" style={fz(200)}>{block.stat}</span>
-          {block.statLabel && <span className="cc-stat__label" style={fz(42)}>{block.statLabel}</span>}
+          {block.statLabel && <span className="cc-stat__label" style={fz(42)}>{renderRich(block.statLabel)}</span>}
           {block.body && <div className="cc-p cc-stat__body" style={fz(32)}><Paragraphs text={block.body} /></div>}
         </>
       );
@@ -69,13 +70,13 @@ function BlockView({ block, slideAlign, frameH }: { block: Block; slideAlign: Sl
     case 'image':
       inner = (
         <figure className="cc-imgblock">
-          {block.caption && block.captionPos === 'above' && <figcaption className="cc-caption" style={fz(26)}>{block.caption}</figcaption>}
+          {block.caption && block.captionPos === 'above' && <figcaption className="cc-caption" style={fz(26)}>{renderRich(block.caption)}</figcaption>}
           {block.src ? (
             <img className="cc-img" src={block.src} alt="" style={{ height: `${block.imageHeight * frameH}px`, objectFit: block.fit }} />
           ) : (
             <div className="cc-img cc-img--ph" style={{ height: `${block.imageHeight * frameH}px` }}>imagem</div>
           )}
-          {block.caption && block.captionPos === 'below' && <figcaption className="cc-caption" style={fz(26)}>{block.caption}</figcaption>}
+          {block.caption && block.captionPos === 'below' && <figcaption className="cc-caption" style={fz(26)}>{renderRich(block.caption)}</figcaption>}
         </figure>
       );
       break;

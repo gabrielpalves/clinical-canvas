@@ -302,6 +302,22 @@
   margin: 64px 0 0;
 }
 
+/* inline rich text (bold / italic / highlight) */
+.cc-frame strong {
+  font-weight: 700;
+}
+.cc-frame em {
+  font-style: italic;
+}
+.cc-hl {
+  background: var(--cc-accent-soft);
+  color: var(--cc-heading);
+  padding: 0 0.14em;
+  border-radius: 0.1em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
 /* per-block wrapper + alignment override */
 .cc-block {
   width: 100%;

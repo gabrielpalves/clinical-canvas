@@ -666,6 +666,48 @@ input[type='range'] {
   margin-top: 10px;
 }
 
+/* markup (rich text) toolbar */
+.mk {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mk__bar {
+  display: flex;
+  gap: 4px;
+}
+.mk__btn {
+  width: 26px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+.mk__btn:hover {
+  border-color: var(--gold);
+  background: var(--panel-2);
+}
+.mk__hl {
+  background: var(--gold-soft);
+  padding: 0 3px;
+  border-radius: 3px;
+}
+.items__row--mk {
+  align-items: flex-start;
+}
+.items__row--mk .items__num {
+  margin-top: 28px;
+}
+.items__field {
+  flex: 1;
+}
+
 /* ---- preview modal ------------------------------------------------------- */
 .preview {
   position: fixed;
