@@ -249,17 +249,8 @@
 .cc-decos--front {
   z-index: 3;
 }
-/* decoration colour drives the shapes' currentColor (class, not inline var, so
-   it survives html-to-image export) */
-.cc-deco-accent {
-  color: var(--cc-accent);
-}
-.cc-deco-heading {
-  color: var(--cc-heading);
-}
-.cc-deco-muted {
-  color: var(--cc-muted);
-}
+/* decoration colours are baked as literal hex on the SVG fill/stroke attributes
+   in Decorations.tsx (CSS vars / currentColor don't survive html-to-image). */
 
 /* swipe / "arraste" hint */
 .cc-swipe {

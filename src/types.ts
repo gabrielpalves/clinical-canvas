@@ -125,7 +125,8 @@ export interface Decoration {
   size: number;
   rotation: number;
   opacity: number;
-  color: 'accent' | 'heading' | 'muted';
+  /** 'accent'/'heading'/'muted' follow the mode; the rest are fixed brand hues. */
+  color: 'accent' | 'heading' | 'muted' | 'gold' | 'brown' | 'wine' | 'blue' | 'cream';
   /** filled vs. outline (ignored by line/arrow). */
   filled: boolean;
   /** render in front of the text instead of behind it. */

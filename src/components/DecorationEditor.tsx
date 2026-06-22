@@ -19,9 +19,14 @@ const KIND_LABELS: Record<Decoration['kind'], string> = {
 };
 
 const COLORS: Array<{ id: Decoration['color']; label: string }> = [
-  { id: 'accent', label: 'Dourado' },
+  { id: 'accent', label: 'Tema' },
   { id: 'heading', label: 'Escuro' },
   { id: 'muted', label: 'Neutro' },
+  { id: 'gold', label: 'Ouro' },
+  { id: 'brown', label: 'Marrom' },
+  { id: 'wine', label: 'Vinho' },
+  { id: 'blue', label: 'Azul' },
+  { id: 'cream', label: 'Creme' },
 ];
 
 function Slider({ label, value, min, max, def, onChange }: { label: string; value: number; min: number; max: number; def: number; onChange: (v: number) => void }) {
@@ -63,7 +68,7 @@ export function DecorationEditor({
       <Slider label="Tamanho" value={Math.round(d.size * 100)} min={5} max={75} def={28} onChange={(v) => onChange({ size: v / 100 })} />
       <Slider label="Rotação" value={Math.round(d.rotation)} min={0} max={360} def={0} onChange={(v) => onChange({ rotation: v })} />
       <Slider label="Opacidade" value={Math.round(d.opacity * 100)} min={5} max={100} def={50} onChange={(v) => onChange({ opacity: v / 100 })} />
-      <div className="seg seg--sm" style={{ marginTop: 8 }}>
+      <div className="seg seg--sm seg--wrap" style={{ marginTop: 8 }}>
         {COLORS.map((col) => (
           <button key={col.id} className={`seg__btn${d.color === col.id ? ' is-active' : ''}`} onClick={() => onChange({ color: col.id })}>
             {col.label}
