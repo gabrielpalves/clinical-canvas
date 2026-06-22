@@ -400,6 +400,9 @@
 .cc-fg-brown { color: #5d4037; }
 .cc-fg-cream { color: #faf7f0; }
 .cc-fg-ink { color: var(--cc-ink); }
+/* inline font-family overrides */
+.cc-fg-serif { font-family: var(--cc-serif); }
+.cc-fg-sans { font-family: var(--cc-sans); }
 
 /* per-block wrapper + alignment override */
 .cc-block {

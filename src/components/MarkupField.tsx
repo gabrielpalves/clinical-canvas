@@ -68,6 +68,9 @@ export function MarkupField({ value, onChange, multiline, rows = 3, placeholder 
         <button type="button" className="mk__btn" title="Itálico" onMouseDown={noBlur} onClick={() => toggle('_', '_')}><i>I</i></button>
         <button type="button" className="mk__btn" title="Destaque" onMouseDown={noBlur} onClick={() => toggle('==', '==')}><span className="mk__hl">H</span></button>
         <span className="mk__sep" />
+        <button type="button" className="mk__btn" title="Fonte serifada" onMouseDown={noBlur} onClick={() => toggle('{{serif:', '}}')} style={{ fontFamily: "'Cormorant Garamond', serif" }}>Aa</button>
+        <button type="button" className="mk__btn" title="Fonte sem serifa" onMouseDown={noBlur} onClick={() => toggle('{{sans:', '}}')} style={{ fontFamily: "'Montserrat', sans-serif", fontSize: 11 }}>Aa</button>
+        <span className="mk__sep" />
         {COLORS.map((c) => (
           <button key={c.name} type="button" className="mk__swatch" title={`Cor: ${c.label}`} style={{ background: c.hex }} onMouseDown={noBlur} onClick={() => toggle(`{{${c.name}:`, '}}')} />
         ))}
