@@ -46,7 +46,7 @@ type Action =
   | { type: 'reset' }
   | { type: 'setMode'; mode: DesignModeId }
   | { type: 'setAspect'; aspect: AspectId }
-  | { type: 'setMeta'; patch: Partial<Pick<Carousel, 'handle' | 'brandName' | 'logoSrc' | 'caption' | 'footerReversed' | 'swipeLabel' | 'swipePosition'>> }
+  | { type: 'setMeta'; patch: Partial<Pick<Carousel, 'handle' | 'brandName' | 'credential' | 'logoSrc' | 'caption' | 'footerReversed' | 'swipeLabel' | 'swipePosition'>> }
   | { type: 'applyTemplate'; slides: Slide[]; caption: string }
   | { type: 'addSlide'; preset: PresetId; afterId?: string }
   | { type: 'duplicateSlide'; id: string }
@@ -210,7 +210,7 @@ function blocksFromLegacy(layout: string, content: Record<string, unknown>, diag
     case 'cover':
       return [hd(s('title'), 'xl'), pg(s('subtitle'))];
     case 'list':
-      return [hd(s('title'), 'md'), createBlock('list', { items: [...items], numbered: true })];
+      return [hd(s('title'), 'md'), createBlock('list', { items: [...items], marker: 'number' })];
     case 'quote':
       return [createBlock('quote', { text: s('quote'), author: s('author') })];
     case 'statistic':
@@ -284,6 +284,7 @@ function migrateToV3(old: Record<string, unknown>): Carousel {
     aspect: (old.aspect as AspectId) ?? 'portrait',
     handle: (old.handle as string) ?? '@psilaisabitencourt',
     brandName: (old.brandName as string) ?? 'Laísa Bitencourt · Psicóloga',
+    credential: (old.credential as string) ?? 'CRP 12/20955',
     logoSrc: (old.logoSrc as string | null) ?? null,
     footerReversed: (old.footerReversed as boolean) ?? false,
     swipeLabel: (old.swipeLabel as boolean) ?? true,
@@ -299,6 +300,7 @@ function normalize(c: Record<string, unknown>): Carousel {
   const carousel = c as unknown as Carousel;
   return {
     ...carousel,
+    credential: (c.credential as string) ?? 'CRP 12/20955',
     logoSrc: (c.logoSrc as string | null) ?? null,
     footerReversed: (c.footerReversed as boolean) ?? false,
     swipeLabel: (c.swipeLabel as boolean) ?? true,
@@ -310,7 +312,15 @@ function normalize(c: Record<string, unknown>): Carousel {
       bgColor: s.bgColor ?? 'auto',
       decorations: s.decorations ?? [],
       layers: { ...defaultLayers(), ...s.layers },
-      blocks: (s.blocks ?? []).map((b) => ({ ...createBlock(b.type), ...b, diagram: { ...defaultDiagram(), ...b.diagram } })),
+      blocks: (s.blocks ?? []).map((b) => {
+        const merged = { ...createBlock(b.type), ...b, diagram: { ...defaultDiagram(), ...b.diagram } };
+        // migrate old list `numbered` boolean to the new `marker`
+        const legacy = b as unknown as { marker?: string; numbered?: boolean };
+        if (merged.type === 'list' && legacy.marker === undefined) {
+          merged.marker = legacy.numbered === false ? 'dot' : 'number';
+        }
+        return merged;
+      }),
     })),
   };
 }

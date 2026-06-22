@@ -33,13 +33,17 @@ function BlockView({ block, slideAlign, frameH }: { block: Block; slideAlign: Sl
       break;
     case 'list':
       inner = (
-        <ol className="cc-list" data-numbered={block.numbered}>
+        <ol className="cc-list" data-marker={block.marker}>
           {block.items.map((item, i) => (
             <li key={i} className="cc-list__item">
-              {block.numbered ? (
+              {block.marker === 'number' ? (
                 <span className="cc-list__num" style={fz(54)}>{String(i + 1).padStart(2, '0')}</span>
+              ) : block.marker === 'arrow' ? (
+                <span className="cc-list__arrow" style={fz(40)} aria-hidden>→</span>
+              ) : block.marker === 'dash' ? (
+                <span className="cc-list__dash" aria-hidden />
               ) : (
-                <span className="cc-list__dot" aria-hidden />
+                <span className={`cc-list__bullet cc-list__bullet--${block.marker}`} aria-hidden />
               )}
               <span className="cc-list__text" style={fz(37)}>{renderRich(item)}</span>
             </li>
@@ -203,7 +207,10 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
             carousel.logoSrc ? (
               <img className="cc-logo" src={carousel.logoSrc} alt={carousel.brandName} />
             ) : (
-              <span className="cc-brand">{carousel.brandName}</span>
+              <span className="cc-brand">
+                <span className="cc-brand__name">{carousel.brandName}</span>
+                {carousel.credential.trim() && <span className="cc-credential">{carousel.credential}</span>}
+              </span>
             )
           ) : null;
           const handle = L.logo && carousel.handle ? <span className="cc-handle">{carousel.handle}</span> : null;

@@ -134,7 +134,7 @@ export function createBlock(type: BlockType, patch: Partial<Block> = {}): Block 
     text: '',
     size: 'md',
     items: [],
-    numbered: true,
+    marker: 'number',
     author: '',
     stat: '',
     statLabel: '',
@@ -151,7 +151,7 @@ export function createBlock(type: BlockType, patch: Partial<Block> = {}): Block 
 
 const heading = (text: string, size: HeadingSize = 'md') => createBlock('heading', { text, size });
 const paragraph = (text: string) => createBlock('paragraph', { text });
-const listBlock = (items: string[], numbered = true) => createBlock('list', { items, numbered });
+const listBlock = (items: string[], marker: Block['marker'] = 'number') => createBlock('list', { items, marker });
 const quote = (text: string, author: string) => createBlock('quote', { text, author });
 const statistic = (stat: string, statLabel: string, body: string) =>
   createBlock('statistic', { stat, statLabel, body });
@@ -287,6 +287,7 @@ export function seedCarousel(): Carousel {
     aspect: 'portrait',
     handle: '@psilaisabitencourt',
     brandName: 'Laísa Bitencourt · Psicóloga',
+    credential: 'CRP 12/20955',
     logoSrc: null,
     footerReversed: false,
     swipeLabel: true,

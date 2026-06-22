@@ -36,6 +36,9 @@ export type BlockType =
 
 export type HeadingSize = 'sm' | 'md' | 'lg' | 'xl';
 
+/** Bullet style for list blocks. */
+export type ListMarker = 'number' | 'dot' | 'ring' | 'dash' | 'arrow';
+
 /** The clean vector figures available on a `diagram` slide. */
 export type DiagramType = 'matrix' | 'venn' | 'distribution' | 'cycle' | 'table';
 
@@ -223,7 +226,7 @@ export interface Block {
   size: HeadingSize;
   /** list */
   items: string[];
-  numbered: boolean;
+  marker: ListMarker;
   /** quote */
   author: string;
   /** statistic */
@@ -271,6 +274,8 @@ export interface Carousel {
   aspect: AspectId;
   handle: string;
   brandName: string;
+  /** professional credential (e.g. CRP), shown under the signature. */
+  credential: string;
   /** optional logo image shown in the footer instead of the signature text. */
   logoSrc: string | null;
   /** swap the footer: handle on the left, signature on the right. */

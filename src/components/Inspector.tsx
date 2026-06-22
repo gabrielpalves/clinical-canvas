@@ -384,6 +384,9 @@ export function Inspector() {
         <Field label="Assinatura">
           <input className="input" value={carousel.brandName} onChange={(e) => dispatch({ type: 'setMeta', patch: { brandName: e.target.value } })} />
         </Field>
+        <Field label="Credencial (CRP) — abaixo da assinatura">
+          <input className="input" value={carousel.credential} onChange={(e) => dispatch({ type: 'setMeta', patch: { credential: e.target.value } })} placeholder="CRP 12/20955" />
+        </Field>
         <Field label="@ do Instagram">
           <input className="input" value={carousel.handle} onChange={(e) => dispatch({ type: 'setMeta', patch: { handle: e.target.value } })} />
         </Field>

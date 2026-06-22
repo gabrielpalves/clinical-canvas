@@ -10,7 +10,7 @@ export interface CarouselTemplate {
 
 const hd = (text: string, size: 'xl' | 'lg' | 'md' | 'sm' = 'md') => createBlock('heading', { text, size });
 const pg = (text: string) => createBlock('paragraph', { text });
-const li = (items: string[], numbered = true) => createBlock('list', { items, numbered });
+const li = (items: string[], marker: 'number' | 'dot' | 'ring' | 'dash' | 'arrow' = 'number') => createBlock('list', { items, marker });
 const qt = (text: string, author: string) => createBlock('quote', { text, author });
 const st = (stat: string, statLabel: string, body: string) => createBlock('statistic', { stat, statLabel, body });
 

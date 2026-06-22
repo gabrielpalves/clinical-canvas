@@ -19,13 +19,12 @@ const KIND_LABELS: Record<Decoration['kind'], string> = {
 };
 
 const COLORS: Array<{ id: Decoration['color']; label: string }> = [
-  { id: 'accent', label: 'Tema' },
-  { id: 'heading', label: 'Escuro' },
-  { id: 'muted', label: 'Neutro' },
-  { id: 'gold', label: 'Ouro' },
+  { id: 'accent', label: 'Ouro' },
   { id: 'brown', label: 'Marrom' },
   { id: 'wine', label: 'Vinho' },
   { id: 'blue', label: 'Azul' },
+  { id: 'heading', label: 'Escuro' },
+  { id: 'muted', label: 'Neutro' },
   { id: 'cream', label: 'Creme' },
 ];
 

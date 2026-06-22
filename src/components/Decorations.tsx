@@ -5,7 +5,7 @@ import type { Decoration, DecorationKind } from '../types';
  *  (CSS vars / currentColor / inherited fill do NOT export reliably). */
 const HEX: Record<Decoration['color'], string> = {
   accent: '#bfa065',
-  heading: '#5d4037',
+  heading: '#2b2321', // "Escuro" — charcoal, distinct from "Marrom"
   muted: '#9a8c7e',
   gold: '#bfa065',
   brown: '#5d4037',

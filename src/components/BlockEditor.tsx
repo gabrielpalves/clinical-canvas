@@ -30,6 +30,14 @@ const HEADING_SIZES: Array<{ id: HeadingSize; label: string }> = [
   { id: 'xl', label: 'GG' },
 ];
 
+const LIST_MARKERS: Array<{ id: Block['marker']; label: string; title: string }> = [
+  { id: 'number', label: '1.', title: 'Numerada' },
+  { id: 'dot', label: '●', title: 'Ponto' },
+  { id: 'ring', label: '○', title: 'Ponto vazado' },
+  { id: 'dash', label: '–', title: 'Traço' },
+  { id: 'arrow', label: '→', title: 'Seta' },
+];
+
 interface Props {
   block: Block;
   index: number;
@@ -136,24 +144,39 @@ export function BlockEditor({ block, index, total, onPatch, onDiagram, onMove, o
 
       {block.type === 'list' && (
         <>
-          <label className="toggle" style={{ marginBottom: 8 }}>
-            <input type="checkbox" checked={block.numbered} onChange={(e) => onPatch({ numbered: e.target.checked })} />
-            <span>Numerada (desligado = marcadores)</span>
-          </label>
-          <div className="items">
-            {block.items.map((item, i) => (
-              <div key={i} className="items__row items__row--mk">
-                <span className="items__num">{block.numbered ? i + 1 : '•'}</span>
-                <div className="items__field">
-                  <MarkupField value={item} onChange={(v) => {
-                    const items = [...block.items];
-                    items[i] = v;
-                    onPatch({ items });
-                  }} />
-                </div>
-                <button className="icon-btn icon-btn--danger" title="Remover item" onClick={() => onPatch({ items: block.items.filter((_, j) => j !== i) })}><X size={14} /></button>
-              </div>
+          <span className="field__label">Marcador</span>
+          <div className="seg seg--sm seg--wrap" style={{ marginBottom: 10 }}>
+            {LIST_MARKERS.map((mk) => (
+              <button key={mk.id} className={`seg__btn${block.marker === mk.id ? ' is-active' : ''}`} title={mk.title} onClick={() => onPatch({ marker: mk.id })}>{mk.label}</button>
             ))}
+          </div>
+          <div className="items">
+            {block.items.map((item, i) => {
+              const moveItem = (dir: -1 | 1) => {
+                const j = i + dir;
+                if (j < 0 || j >= block.items.length) return;
+                const items = [...block.items];
+                [items[i], items[j]] = [items[j], items[i]];
+                onPatch({ items });
+              };
+              return (
+                <div key={i} className="items__row items__row--mk">
+                  <span className="items__num">{i + 1}</span>
+                  <div className="items__field">
+                    <MarkupField value={item} onChange={(v) => {
+                      const items = [...block.items];
+                      items[i] = v;
+                      onPatch({ items });
+                    }} />
+                  </div>
+                  <div className="items__btns">
+                    <button className="icon-btn" title="Mover item para cima" disabled={i === 0} onClick={() => moveItem(-1)}><ArrowUp size={13} /></button>
+                    <button className="icon-btn" title="Mover item para baixo" disabled={i === block.items.length - 1} onClick={() => moveItem(1)}><ArrowDown size={13} /></button>
+                    <button className="icon-btn icon-btn--danger" title="Remover item" onClick={() => onPatch({ items: block.items.filter((_, j) => j !== i) })}><X size={13} /></button>
+                  </div>
+                </div>
+              );
+            })}
             <button className="btn btn--ghost btn--sm" onClick={() => onPatch({ items: [...block.items, ''] })}><Plus size={14} /> Adicionar item</button>
           </div>
         </>
