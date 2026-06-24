@@ -2,12 +2,14 @@
 // Clinical Canvas — domain types
 // ---------------------------------------------------------------------------
 
-/** The four visual identities the whole carousel can adopt. */
+/** The visual identities the whole carousel can adopt. */
 export type DesignModeId =
   | 'minimalist-academic'
   | 'earth-clinical'
   | 'narrative-compass'
-  | 'somatic-sanctuary';
+  | 'somatic-sanctuary'
+  /** neutral, cool, minimal canvas — a clean starting point for any niche. */
+  | 'studio';
 
 /** Instagram-friendly output ratios. */
 export type AspectId = 'portrait' | 'square';
@@ -35,6 +37,10 @@ export type BlockType =
   | 'divider';
 
 export type HeadingSize = 'sm' | 'md' | 'lg' | 'xl';
+
+/** Font family a single block can adopt. 'auto' keeps the element default
+ *  (headings in serif, body in sans). */
+export type BlockFont = 'auto' | 'cormorant' | 'montserrat' | 'lora';
 
 /** Bullet style for list blocks. */
 export type ListMarker = 'number' | 'dot' | 'ring' | 'dash' | 'arrow';
@@ -151,8 +157,9 @@ export type EyebrowPlacement = 'inline' | 'top';
 export type BackgroundStyle = 'solid' | 'soft' | 'gradient';
 
 /** A per-slide background fill from the brand palette. 'auto' follows the mode
- *  (and uses BackgroundStyle); the others set a fixed colour with legible text. */
-export type BgColor = 'auto' | 'offwhite' | 'beige' | 'gold' | 'brown' | 'wine' | 'blue';
+ *  (and uses BackgroundStyle); the named ones set a fixed colour with legible
+ *  text; 'custom' uses the free hex in `Slide.bgCustom`. */
+export type BgColor = 'auto' | 'offwhite' | 'beige' | 'gold' | 'brown' | 'wine' | 'blue' | 'custom';
 
 /** Where an image lives on a slide. Non-background placements reflow the text. */
 export type ImagePlacement = 'background' | 'left' | 'right' | 'top' | 'bottom';
@@ -220,6 +227,14 @@ export interface Block {
   padX: number;
   /** draw a bordered box around the block. */
   boxed: boolean;
+  /** per-block overrides ('' = inherit from the slide/mode). Hex like '#1b1d21'. */
+  textColor: string;
+  /** fill behind just this block ('' = none). */
+  bgColor: string;
+  /** accent override for this block's markers/numbers/rules ('' = inherit). */
+  accentColor: string;
+  /** font family for this block's text. */
+  font: BlockFont;
   /** heading / paragraph / quote text. */
   text: string;
   /** heading size. */
@@ -252,6 +267,8 @@ export interface Slide {
   background: BackgroundStyle;
   /** brand-palette background fill ('auto' = follow the mode). */
   bgColor: BgColor;
+  /** free hex background, used when bgColor === 'custom'. '' = unset. */
+  bgCustom: string;
   /** optional full-bleed background image. */
   bgImage: SlideImage | null;
   /** slide-level eyebrow (above the blocks). */

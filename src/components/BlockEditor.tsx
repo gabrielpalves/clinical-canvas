@@ -1,7 +1,9 @@
 import { useRef } from 'react';
 import { ArrowDown, ArrowUp, ImagePlus, Plus, Trash2, X } from 'lucide-react';
-import type { Block, DiagramConfig, ElementAlign, HeadingSize } from '../types';
+import type { Block, BlockFont, DiagramConfig, ElementAlign, HeadingSize } from '../types';
 import { fileToDataUrl } from '../lib/helpers';
+import { BLOCK_FONTS } from '../designModes';
+import { ColorField } from './ColorField';
 import { DiagramFields } from './DiagramFields';
 import { MarkupField } from './MarkupField';
 
@@ -106,6 +108,21 @@ export function BlockEditor({ block, index, total, onPatch, onDiagram, onMove, o
           <input type="checkbox" checked={block.boxed} onChange={(e) => onPatch({ boxed: e.target.checked })} />
           <span>Caixa</span>
         </label>
+      </div>
+
+      {/* per-block colours + font */}
+      <div className="block-card__colors">
+        <ColorField label="Texto" value={block.textColor} onChange={(v) => onPatch({ textColor: v })} fallback="#433430" />
+        <ColorField label="Fundo do bloco" value={block.bgColor} onChange={(v) => onPatch({ bgColor: v })} fallback="#f2efe9" />
+        <ColorField label="Destaque" value={block.accentColor} onChange={(v) => onPatch({ accentColor: v })} fallback="#bfa065" />
+        <div className="colorfield">
+          <span className="colorfield__label">Fonte</span>
+          <select className="input colorfield__hex" value={block.font} onChange={(e) => onPatch({ font: e.target.value as BlockFont })}>
+            {BLOCK_FONTS.map((f) => (
+              <option key={f.id} value={f.id}>{f.label}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {block.type === 'heading' && (

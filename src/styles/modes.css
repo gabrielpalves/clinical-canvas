@@ -115,6 +115,19 @@
   --cc-line: rgba(43, 35, 33, 0.16);
 }
 
+/* studio: neutral, cool, minimal — a blank canvas for any niche. */
+.cc-frame[data-mode='studio'] {
+  --cc-bg: #f6f7f8;
+  --cc-bg-soft: #eceef0;
+  --cc-accent: #6b7280;
+  --cc-accent-soft: #e2e5e8;
+  --cc-heading: #1b1d21;
+  --cc-ink: #2c2f34;
+  --cc-muted: #8b9097;
+  --cc-line: rgba(27, 29, 33, 0.14);
+  --cc-radius: 2px;
+}
+
 /* ==========================================================================
    Per-slide brand background colours (override the mode's palette + remap text
    for legibility). Placed after the mode palettes so they win.
@@ -415,6 +428,12 @@
   padding-bottom: 36px;
   padding-left: 40px;
   padding-right: 40px;
+}
+/* a block with a custom background fill but no border — give it breathing room
+   so the text doesn't touch the colour edge. (Boxed blocks already pad.) */
+.cc-block--filled {
+  border-radius: var(--cc-radius);
+  padding: 30px 40px;
 }
 .cc-block[data-balign='left'] {
   text-align: left;

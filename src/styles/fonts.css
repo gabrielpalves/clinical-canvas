@@ -21,3 +21,12 @@
 @import '@fontsource/montserrat/700.css';
 @import '@fontsource/montserrat/300-italic.css';
 @import '@fontsource/montserrat/400-italic.css';
+
+/* Lora — alternate serif (per-block font option) */
+@import '@fontsource/lora/400.css';
+@import '@fontsource/lora/500.css';
+@import '@fontsource/lora/600.css';
+@import '@fontsource/lora/700.css';
+@import '@fontsource/lora/400-italic.css';
+@import '@fontsource/lora/500-italic.css';
+@import '@fontsource/lora/600-italic.css';

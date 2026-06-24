@@ -40,6 +40,7 @@ export interface SlideStyleDefaults {
   contentAnchor: VerticalAnchor;
   background: BackgroundStyle;
   bgColor: BgColor;
+  bgCustom: string;
   eyebrowAlign: ElementAlign;
   eyebrowPlacement: EyebrowPlacement;
 }
@@ -49,6 +50,7 @@ export const SLIDE_STYLE_DEFAULTS: SlideStyleDefaults = {
   contentAnchor: 'center',
   background: 'solid',
   bgColor: 'auto',
+  bgCustom: '',
   eyebrowAlign: 'inherit',
   eyebrowPlacement: 'inline',
 };
@@ -131,6 +133,10 @@ export function createBlock(type: BlockType, patch: Partial<Block> = {}): Block 
     spaceTop: 0,
     padX: 0,
     boxed: false,
+    textColor: '',
+    bgColor: '',
+    accentColor: '',
+    font: 'auto',
     text: '',
     size: 'md',
     items: [],
@@ -161,6 +167,7 @@ interface SlideSeed {
   contentAnchor?: VerticalAnchor;
   background?: BackgroundStyle;
   bgColor?: BgColor;
+  bgCustom?: string;
   bgImage?: SlideImage | null;
   eyebrow?: string;
   eyebrowAlign?: ElementAlign;
@@ -178,6 +185,7 @@ export function createSlide(seed: SlideSeed = {}): Slide {
     contentAnchor: seed.contentAnchor ?? SLIDE_STYLE_DEFAULTS.contentAnchor,
     background: seed.background ?? SLIDE_STYLE_DEFAULTS.background,
     bgColor: seed.bgColor ?? SLIDE_STYLE_DEFAULTS.bgColor,
+    bgCustom: seed.bgCustom ?? SLIDE_STYLE_DEFAULTS.bgCustom,
     bgImage: seed.bgImage ?? null,
     eyebrow: seed.eyebrow ?? '',
     eyebrowAlign: seed.eyebrowAlign ?? SLIDE_STYLE_DEFAULTS.eyebrowAlign,

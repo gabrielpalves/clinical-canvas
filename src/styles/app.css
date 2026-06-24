@@ -717,6 +717,52 @@ input[type='range'] {
   min-width: 130px;
 }
 
+/* per-block colour + font controls */
+.block-card__colors {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 8px 0 2px;
+  border-top: 1px solid var(--border);
+}
+.colorfield {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.colorfield__label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+  flex-shrink: 0;
+  width: 84px;
+}
+.colorfield__swatch {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.colorfield__swatch::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+.colorfield__swatch::-webkit-color-swatch {
+  border: none;
+  border-radius: 4px;
+}
+.colorfield__hex {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  padding: 6px 9px;
+  font-size: 12.5px;
+}
+
 /* decoration cards */
 .deco-card {
   border: 1px solid var(--border);

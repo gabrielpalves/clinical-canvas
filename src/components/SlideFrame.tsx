@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import type { Block, Carousel, ElementAlign, Slide } from '../types';
-import { DIMENSIONS, bandForSlide } from '../lib/helpers';
+import { DIMENSIONS, bandForSlide, customBgVars, isHex } from '../lib/helpers';
+import { BLOCK_FONT_FAMILY } from '../designModes';
 import { renderRich } from '../lib/richText';
 import { Diagram } from './Diagram';
 import { Decorations } from './Decorations';
@@ -90,12 +91,31 @@ function BlockView({ block, slideAlign, frameH }: { block: Block; slideAlign: Sl
     default:
       inner = null;
   }
+  // per-block colour + font overrides, applied as CSS vars on the wrapper so
+  // every inner element (heading, list markers, stat, divider…) shifts together.
+  const filled = isHex(block.bgColor);
+  const style: Record<string, string | number | undefined> = {
+    marginTop: block.spaceTop ? `${block.spaceTop}px` : undefined,
+    paddingLeft: block.padX ? `${block.padX}px` : undefined,
+    paddingRight: block.padX ? `${block.padX}px` : undefined,
+  };
+  if (filled) style.background = block.bgColor;
+  if (isHex(block.textColor)) {
+    style['--cc-heading'] = block.textColor;
+    style['--cc-ink'] = block.textColor;
+  }
+  if (isHex(block.accentColor)) style['--cc-accent'] = block.accentColor;
+  const family = BLOCK_FONT_FAMILY[block.font];
+  if (family) {
+    style['--cc-serif'] = family;
+    style['--cc-sans'] = family;
+  }
   return (
     <div
-      className={`cc-block${block.boxed ? ' cc-block--boxed' : ''}`}
+      className={`cc-block${block.boxed ? ' cc-block--boxed' : ''}${filled && !block.boxed ? ' cc-block--filled' : ''}`}
       data-balign={align}
       data-type={block.type}
-      style={{ marginTop: block.spaceTop ? `${block.spaceTop}px` : undefined, paddingLeft: block.padX ? `${block.padX}px` : undefined, paddingRight: block.padX ? `${block.padX}px` : undefined }}
+      style={style as React.CSSProperties}
     >
       {inner}
     </div>
@@ -139,6 +159,12 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
   const eyebrowTop = showEyebrow && slide.eyebrowPlacement === 'top';
   const eyebrowInline = showEyebrow && slide.eyebrowPlacement === 'inline';
 
+  // 'custom' bgColor injects its palette inline (the dynamic hex wins over the
+  // mode + remaps text for legibility); the named swatches use CSS in modes.css.
+  const customBg = slide.bgColor === 'custom' && isHex(slide.bgCustom);
+  const frameStyle: Record<string, string | number> = { width: w, height: h };
+  if (customBg) Object.assign(frameStyle, customBgVars(slide.bgCustom));
+
   return (
     <div
       className="cc-frame"
@@ -148,7 +174,7 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
       data-align={slide.align}
       data-aspect={carousel.aspect}
       data-export-id={slide.id}
-      style={{ width: w, height: h }}
+      style={frameStyle as React.CSSProperties}
     >
       {bg && (
         <Fragment>

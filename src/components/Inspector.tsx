@@ -16,6 +16,7 @@ import type {
 } from '../types';
 import { defaultDecoration, defaultImage, uid } from '../state/factory';
 import { BlockEditor } from './BlockEditor';
+import { ColorField } from './ColorField';
 import { DecorationEditor } from './DecorationEditor';
 
 const BACKGROUNDS: Array<{ id: BackgroundStyle; label: string }> = [
@@ -31,6 +32,7 @@ const BG_COLORS: Array<{ id: BgColor; label: string; color?: string }> = [
   { id: 'brown', label: 'Marrom', color: '#5D4037' },
   { id: 'wine', label: 'Vinho', color: '#682D36' },
   { id: 'blue', label: 'Azul-noite', color: '#131736' },
+  { id: 'custom', label: 'Personalizada (hex)' },
 ];
 const ALIGNS: Array<{ id: TextAlign; label: string }> = [
   { id: 'left', label: 'Esquerda' },
@@ -100,7 +102,7 @@ export function Inspector() {
   const bg = slide.bgImage;
 
   const setField = (
-    patch: Partial<Pick<Slide, 'align' | 'contentAnchor' | 'background' | 'bgColor' | 'eyebrowAlign' | 'eyebrowPlacement' | 'eyebrow' | 'reference'>>,
+    patch: Partial<Pick<Slide, 'align' | 'contentAnchor' | 'background' | 'bgColor' | 'bgCustom' | 'eyebrowAlign' | 'eyebrowPlacement' | 'eyebrow' | 'reference'>>,
   ) => dispatch({ type: 'updateSlide', id, patch });
   const setLayer = (key: keyof SlideLayers, value: boolean) => dispatch({ type: 'updateLayers', id, patch: { [key]: value } });
 
@@ -210,13 +212,14 @@ export function Inspector() {
             ))}
           </div>
         </Field>
-        <Field label="Cor do fundo">
+        <div className="field">
+          <span className="field__label">Cor do fundo</span>
           <div className="swatch-row">
             {BG_COLORS.map((c) =>
-              c.id === 'auto' ? (
+              c.id === 'auto' || c.id === 'custom' ? (
                 <button key={c.id} type="button" title={c.label}
                   className={`swatch swatch--auto${slide.bgColor === c.id ? ' is-active' : ''}`}
-                  onClick={() => setField({ bgColor: c.id })}>Auto</button>
+                  onClick={() => setField({ bgColor: c.id })}>{c.id === 'auto' ? 'Auto' : 'Hex'}</button>
               ) : (
                 <button key={c.id} type="button" title={c.label}
                   className={`swatch${slide.bgColor === c.id ? ' is-active' : ''}`}
@@ -225,7 +228,12 @@ export function Inspector() {
               ),
             )}
           </div>
-        </Field>
+          {slide.bgColor === 'custom' && (
+            <div style={{ marginTop: 10 }}>
+              <ColorField label="Cor personalizada" value={slide.bgCustom} onChange={(v) => setField({ bgCustom: v })} fallback="#14161a" />
+            </div>
+          )}
+        </div>
         <Field label="Tratamento do fundo">
           <div className="seg">
             {BACKGROUNDS.map((b) => (
