@@ -40,7 +40,7 @@ export type HeadingSize = 'sm' | 'md' | 'lg' | 'xl';
 
 /** Font family a single block can adopt. 'auto' keeps the element default
  *  (headings in serif, body in sans). */
-export type BlockFont = 'auto' | 'cormorant' | 'montserrat' | 'lora';
+export type BlockFont = 'auto' | 'cormorant' | 'lora' | 'fraunces' | 'montserrat' | 'inter';
 
 /** Bullet style for list blocks. */
 export type ListMarker = 'number' | 'dot' | 'ring' | 'dash' | 'arrow';

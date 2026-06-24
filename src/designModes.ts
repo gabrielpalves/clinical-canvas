@@ -67,7 +67,9 @@ export const BLOCK_FONTS: Array<{ id: BlockFont; label: string; family: string }
   { id: 'auto', label: 'Automática (padrão)', family: '' },
   { id: 'cormorant', label: 'Cormorant (serifa)', family: "'Cormorant Garamond', Georgia, serif" },
   { id: 'lora', label: 'Lora (serifa)', family: "'Lora', Georgia, serif" },
+  { id: 'fraunces', label: 'Fraunces (serifa expressiva)', family: "'Fraunces', Georgia, serif" },
   { id: 'montserrat', label: 'Montserrat (sans)', family: "'Montserrat', system-ui, sans-serif" },
+  { id: 'inter', label: 'Inter (sans neutra)', family: "'Inter', system-ui, sans-serif" },
 ];
 
 export const BLOCK_FONT_FAMILY: Record<BlockFont, string> = Object.fromEntries(
