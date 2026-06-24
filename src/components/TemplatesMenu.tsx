@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { LayoutTemplate } from 'lucide-react';
 import { useCarousel } from '../state/CarouselContext';
 import { TEMPLATES } from '../state/templates';
@@ -30,22 +30,27 @@ export function TemplatesMenu() {
       {open && (
         <div className="add-menu__pop add-menu__pop--down" role="menu">
           <p className="add-menu__title">Começar de um modelo</p>
-          {TEMPLATES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className="add-menu__item"
-              onClick={() => {
-                if (confirm(`Substituir o carrossel atual pelo modelo "${t.name}"?`)) {
-                  const { slides, caption } = t.build();
-                  dispatch({ type: 'applyTemplate', slides, caption });
-                }
-                setOpen(false);
-              }}
-            >
-              <span className="add-menu__name">{t.name}</span>
-              <span className="add-menu__desc">{t.description}</span>
-            </button>
+          {TEMPLATES.map((t, i) => (
+            <Fragment key={t.id}>
+              {(i === 0 || TEMPLATES[i - 1].group !== t.group) && (
+                <p className="add-menu__group">{t.group}</p>
+              )}
+              <button
+                type="button"
+                className="add-menu__item"
+                onClick={() => {
+                  if (confirm(`Substituir o carrossel atual pelo modelo "${t.name}"?`)) {
+                    const { slides, caption } = t.build();
+                    dispatch({ type: 'applyTemplate', slides, caption });
+                    if (t.mode) dispatch({ type: 'setMode', mode: t.mode });
+                  }
+                  setOpen(false);
+                }}
+              >
+                <span className="add-menu__name">{t.name}</span>
+                <span className="add-menu__desc">{t.description}</span>
+              </button>
+            </Fragment>
           ))}
         </div>
       )}

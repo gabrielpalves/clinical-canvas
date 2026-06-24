@@ -380,6 +380,21 @@ body {
   letter-spacing: 0.12em;
   color: var(--muted);
 }
+.add-menu__group {
+  margin: 10px 8px 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+}
+.add-menu__group:first-child {
+  margin-top: 2px;
+  padding-top: 0;
+  border-top: none;
+}
 .add-menu__item {
   display: flex;
   flex-direction: column;
