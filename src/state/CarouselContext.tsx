@@ -46,7 +46,7 @@ type Action =
   | { type: 'reset' }
   | { type: 'setMode'; mode: DesignModeId }
   | { type: 'setAspect'; aspect: AspectId }
-  | { type: 'setMeta'; patch: Partial<Pick<Carousel, 'handle' | 'brandName' | 'credential' | 'logoSrc' | 'caption' | 'footerReversed' | 'swipeLabel' | 'swipePosition'>> }
+  | { type: 'setMeta'; patch: Partial<Pick<Carousel, 'handle' | 'brandName' | 'credential' | 'logoSrc' | 'caption' | 'footerReversed' | 'footerRule' | 'swipeLabel' | 'swipeText' | 'swipePosition'>> }
   | { type: 'applyTemplate'; slides: Slide[]; caption: string }
   | { type: 'addSlide'; preset: PresetId; afterId?: string }
   | { type: 'duplicateSlide'; id: string }
@@ -288,7 +288,9 @@ function migrateToV3(old: Record<string, unknown>): Carousel {
     credential: (old.credential as string) ?? 'CRP 12/20955',
     logoSrc: (old.logoSrc as string | null) ?? null,
     footerReversed: (old.footerReversed as boolean) ?? false,
+    footerRule: (old.footerRule as boolean) ?? true,
     swipeLabel: (old.swipeLabel as boolean) ?? true,
+    swipeText: (old.swipeText as string) ?? 'arraste',
     swipePosition: (old.swipePosition as Carousel['swipePosition']) ?? 'bottom',
     caption: (old.caption as string) ?? '',
     slides,
@@ -304,7 +306,9 @@ function normalize(c: Record<string, unknown>): Carousel {
     credential: (c.credential as string) ?? 'CRP 12/20955',
     logoSrc: (c.logoSrc as string | null) ?? null,
     footerReversed: (c.footerReversed as boolean) ?? false,
+    footerRule: (c.footerRule as boolean) ?? true,
     swipeLabel: (c.swipeLabel as boolean) ?? true,
+    swipeText: (c.swipeText as string) ?? 'arraste',
     swipePosition: (c.swipePosition as Carousel['swipePosition']) ?? 'bottom',
     caption: (c.caption as string) ?? '',
     bands: (c.bands as Carousel['bands']) ?? [],

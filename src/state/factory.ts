@@ -133,6 +133,11 @@ export function createBlock(type: BlockType, patch: Partial<Block> = {}): Block 
     spaceTop: 0,
     padX: 0,
     boxed: false,
+    boxBorder: true,
+    boxWidth: 1,
+    boxRadius: 0,
+    boxPadX: 40,
+    boxPadY: 36,
     textColor: '',
     bgColor: '',
     accentColor: '',
@@ -298,7 +303,9 @@ export function seedCarousel(): Carousel {
     credential: 'CRP 12/20955',
     logoSrc: null,
     footerReversed: false,
+    footerRule: true,
     swipeLabel: true,
+    swipeText: 'arraste',
     swipePosition: 'bottom',
     caption:
       'O silêncio que antecede a emoção 🌿\n\n' +

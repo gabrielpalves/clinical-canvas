@@ -94,12 +94,16 @@ function BlockView({ block, slideAlign, frameH }: { block: Block; slideAlign: Sl
   // per-block colour + font overrides, applied as CSS vars on the wrapper so
   // every inner element (heading, list markers, stat, divider…) shifts together.
   const filled = isHex(block.bgColor);
+  const boxed = block.boxed;
   const style: Record<string, string | number | undefined> = {
     marginTop: block.spaceTop ? `${block.spaceTop}px` : undefined,
     paddingLeft: block.padX ? `${block.padX}px` : undefined,
     paddingRight: block.padX ? `${block.padX}px` : undefined,
   };
-  if (filled) style.background = block.bgColor;
+  // A non-boxed block with a fill keeps the simple background on the wrapper.
+  // A boxed block moves the fill/padding to an inner .cc-box so the box can be
+  // fully customised (background, border, rounded corners, padding).
+  if (filled && !boxed) style.background = block.bgColor;
   if (isHex(block.textColor)) {
     style['--cc-heading'] = block.textColor;
     style['--cc-ink'] = block.textColor;
@@ -110,14 +114,32 @@ function BlockView({ block, slideAlign, frameH }: { block: Block; slideAlign: Sl
     style['--cc-serif'] = family;
     style['--cc-sans'] = family;
   }
+
+  let content: React.ReactNode = inner;
+  if (boxed) {
+    const boxStyle: React.CSSProperties = {
+      background: filled ? block.bgColor : undefined,
+      border: block.boxBorder ? '1px solid var(--cc-line)' : 'none',
+      borderRadius: `${block.boxRadius}px`,
+      padding: `${block.boxPadY}px ${block.boxPadX}px`,
+      width: `${block.boxWidth * 100}%`,
+    };
+    // a box narrower than the column is positioned by the block's alignment
+    if (block.boxWidth < 1) {
+      boxStyle.marginLeft = align === 'left' ? 0 : 'auto';
+      boxStyle.marginRight = align === 'right' ? 0 : 'auto';
+    }
+    content = <div className="cc-box" style={boxStyle}>{inner}</div>;
+  }
+
   return (
     <div
-      className={`cc-block${block.boxed ? ' cc-block--boxed' : ''}${filled && !block.boxed ? ' cc-block--filled' : ''}`}
+      className={`cc-block${filled && !boxed ? ' cc-block--filled' : ''}`}
       data-balign={align}
       data-type={block.type}
       style={style as React.CSSProperties}
     >
-      {inner}
+      {content}
     </div>
   );
 }
@@ -197,7 +219,7 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
 
       {L.swipe && (
         <span className="cc-swipe" data-pos={carousel.swipePosition} aria-hidden>
-          {carousel.swipeLabel && <span className="cc-swipe__label">arraste</span>}
+          {carousel.swipeLabel && carousel.swipeText.trim() && <span className="cc-swipe__label">{carousel.swipeText}</span>}
           <svg viewBox="0 0 40 24" className="cc-swipe__icon" xmlns="http://www.w3.org/2000/svg">
             <path d="M4 12 H30 M22 5 L31 12 L22 19" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -227,7 +249,7 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
         </div>
       )}
 
-      <footer className="cc-footer">
+      <footer className="cc-footer" data-rule={carousel.footerRule ? 'on' : 'off'}>
         {(() => {
           const brand = L.logo ? (
             carousel.logoSrc ? (

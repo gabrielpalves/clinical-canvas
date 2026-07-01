@@ -223,10 +223,21 @@ export interface Block {
   scale: number;
   /** extra space (px) above this block. */
   spaceTop: number;
-  /** horizontal padding (px) inside this block. */
+  /** horizontal padding (px) that insets the block within the column. */
   padX: number;
-  /** draw a bordered box around the block. */
+  /** wrap the block in a box (background/border/rounded corners/padding). */
   boxed: boolean;
+  /** box: draw the 1px border (off = borderless, e.g. a clean white card). */
+  boxBorder: boolean;
+  /** box: fraction of the column width the box occupies (0.3..1). Narrower
+   *  boxes are positioned by the block's alignment (left/center/right). */
+  boxWidth: number;
+  /** box: corner radius in px (0 = square corners). */
+  boxRadius: number;
+  /** box: inner horizontal padding in px. */
+  boxPadX: number;
+  /** box: inner vertical padding in px. */
+  boxPadY: number;
   /** per-block overrides ('' = inherit from the slide/mode). Hex like '#1b1d21'. */
   textColor: string;
   /** fill behind just this block ('' = none). */
@@ -297,8 +308,12 @@ export interface Carousel {
   logoSrc: string | null;
   /** swap the footer: handle on the left, signature on the right. */
   footerReversed: boolean;
-  /** show the word "arraste" next to the swipe arrow. */
+  /** draw the thin rule above the footer that divides it from the content. */
+  footerRule: boolean;
+  /** show the swipe word (see `swipeText`) next to the swipe arrow. */
   swipeLabel: boolean;
+  /** the word shown next to the swipe arrow (e.g. "arraste"). */
+  swipeText: string;
   /** where the swipe arrow sits. */
   swipePosition: 'bottom' | 'middle';
   /** the Instagram caption (+ hashtags); exported alongside the images. */

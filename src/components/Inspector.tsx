@@ -307,8 +307,14 @@ export function Inspector() {
           <>
             <label className="toggle" style={{ marginTop: 12 }}>
               <input type="checkbox" checked={carousel.swipeLabel} onChange={(e) => dispatch({ type: 'setMeta', patch: { swipeLabel: e.target.checked } })} />
-              <span>Mostrar a palavra "arraste"</span>
+              <span>Mostrar a palavra da seta</span>
             </label>
+            {carousel.swipeLabel && (
+              <Field label="Palavra da seta">
+                <input className="input" value={carousel.swipeText} placeholder="arraste"
+                  onChange={(e) => dispatch({ type: 'setMeta', patch: { swipeText: e.target.value } })} />
+              </Field>
+            )}
             <Field label="Posição da seta">
               <div className="seg">
                 {(['bottom', 'middle'] as const).map((p) => (
@@ -404,6 +410,10 @@ export function Inspector() {
             <button className={`seg__btn${carousel.footerReversed ? ' is-active' : ''}`} onClick={() => dispatch({ type: 'setMeta', patch: { footerReversed: true } })}>@ · Assinatura</button>
           </div>
         </Field>
+        <label className="toggle" style={{ marginBottom: 14 }}>
+          <input type="checkbox" checked={carousel.footerRule} onChange={(e) => dispatch({ type: 'setMeta', patch: { footerRule: e.target.checked } })} />
+          <span>Linha acima do rodapé</span>
+        </label>
         <div className="field">
           <span className="field__label">Logo (substitui a assinatura)</span>
           <input ref={logoRef} type="file" accept="image/*" hidden onChange={onUploadLogo} />

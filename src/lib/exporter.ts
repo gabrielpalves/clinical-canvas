@@ -70,11 +70,18 @@ export async function exportCarouselZip(
   if (caption.trim()) zip.file('legenda.txt', caption);
 
   // Compute the embedded-font CSS once and reuse it for every slide.
+  // IMPORTANT: html-to-image's getFontEmbedCSS only embeds the fonts *used by
+  // the node passed to it* (it calls getUsedFonts on that node). Passing a
+  // single slide dropped any font used only on other slides (e.g. a per-block
+  // Lora / Fraunces / Inter), so those slides exported with a fallback font
+  // while the per-slide PNG button — which computes fonts per slide — looked
+  // fine. Compute it from a scope that contains every slide (the document body)
+  // so the embedded CSS covers the union of all fonts in the carousel.
   let fontEmbedCSS: string | undefined;
-  const firstNode = slideIds.map(frameNode).find((n): n is HTMLElement => n !== null);
-  if (firstNode) {
+  const anyNode = slideIds.map(frameNode).find((n): n is HTMLElement => n !== null);
+  if (anyNode) {
     try {
-      fontEmbedCSS = await getFontEmbedCSS(firstNode);
+      fontEmbedCSS = await getFontEmbedCSS(anyNode.ownerDocument.body);
     } catch {
       /* fall back to per-slide embedding */
     }

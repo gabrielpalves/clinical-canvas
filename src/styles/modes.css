@@ -421,16 +421,13 @@
 .cc-block {
   width: 100%;
 }
-.cc-block--boxed {
-  border: 1px solid var(--cc-line);
-  border-radius: var(--cc-radius);
-  padding-top: 36px;
-  padding-bottom: 36px;
-  padding-left: 40px;
-  padding-right: 40px;
+/* the inner box: background / border / rounded corners / padding are all set
+   inline per block (see SlideFrame BlockView) so each box is fully customisable. */
+.cc-box {
+  width: 100%;
 }
 /* a block with a custom background fill but no border — give it breathing room
-   so the text doesn't touch the colour edge. (Boxed blocks already pad.) */
+   so the text doesn't touch the colour edge. (Boxed blocks pad via .cc-box.) */
 .cc-block--filled {
   border-radius: var(--cc-radius);
   padding: 30px 40px;
@@ -710,6 +707,11 @@
   padding: 30px 0 72px;
   font-family: var(--cc-sans);
   font-size: 24px;
+}
+/* optional divider above the footer — kept as transparent (not removed) so the
+   footer's vertical position stays identical when the rule is toggled off. */
+.cc-footer[data-rule='off'] {
+  border-top-color: transparent;
 }
 .cc-brand {
   display: flex;

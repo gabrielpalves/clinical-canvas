@@ -110,6 +110,46 @@ export function BlockEditor({ block, index, total, onPatch, onDiagram, onMove, o
         </label>
       </div>
 
+      {block.boxed && (
+        <div className="block-card__row">
+          <label className="toggle">
+            <input type="checkbox" checked={block.boxBorder} onChange={(e) => onPatch({ boxBorder: e.target.checked })} />
+            <span>Borda</span>
+          </label>
+          <div className="size-row size-row--inline">
+            <span className="size-row__icon size-row__icon--wide" title="Largura da caixa no slide (a caixa encolhe e é posicionada pelo alinhamento)">Largura</span>
+            <input type="range" min={30} max={100} value={Math.round(block.boxWidth * 100)}
+              onDoubleClick={() => onPatch({ boxWidth: 1 })}
+              onChange={(e) => onPatch({ boxWidth: Number(e.target.value) / 100 })} />
+            <span className="size-row__suffix">{Math.round(block.boxWidth * 100)}%</span>
+          </div>
+          <div className="size-row size-row--inline">
+            <span className="size-row__icon size-row__icon--wide" title="Cantos arredondados">Raio</span>
+            <input type="range" min={0} max={80} value={Math.round(block.boxRadius)}
+              onDoubleClick={() => onPatch({ boxRadius: 0 })}
+              onChange={(e) => onPatch({ boxRadius: Number(e.target.value) })} />
+            <span className="size-row__suffix">{Math.round(block.boxRadius)}</span>
+          </div>
+          <div className="size-row size-row--inline">
+            <span className="size-row__icon size-row__icon--wide" title="Espaçamento interno horizontal (entre a borda da caixa e o texto)">Recuo ↔</span>
+            <input type="range" min={0} max={140} value={Math.round(block.boxPadX)}
+              onDoubleClick={() => onPatch({ boxPadX: 40 })}
+              onChange={(e) => onPatch({ boxPadX: Number(e.target.value) })} />
+            <span className="size-row__suffix">{Math.round(block.boxPadX)}</span>
+          </div>
+          <div className="size-row size-row--inline">
+            <span className="size-row__icon size-row__icon--wide" title="Espaçamento interno vertical (entre a borda da caixa e o texto)">Recuo ↕</span>
+            <input type="range" min={0} max={140} value={Math.round(block.boxPadY)}
+              onDoubleClick={() => onPatch({ boxPadY: 36 })}
+              onChange={(e) => onPatch({ boxPadY: Number(e.target.value) })} />
+            <span className="size-row__suffix">{Math.round(block.boxPadY)}</span>
+          </div>
+          <p className="section__hint" style={{ margin: '2px 0 0', width: '100%' }}>
+            <b>Largura</b> muda o tamanho da caixa no slide; <b>Recuo</b> é o espaço interno até o texto. Defina o <b>Fundo do bloco</b> abaixo para preencher a caixa (ex.: branco com texto preto sobre uma foto).
+          </p>
+        </div>
+      )}
+
       {/* per-block colours + font */}
       <div className="block-card__colors">
         <ColorField label="Texto" value={block.textColor} onChange={(v) => onPatch({ textColor: v })} fallback="#433430" />
