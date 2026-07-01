@@ -190,12 +190,21 @@ export interface PanoramaBand {
   src: string;
   /** ids of the slides this band covers, left-to-right. */
   slideIds: string[];
+  /** ids (subset of slideIds) where the image is hidden — per-slide on/off. */
+  hiddenSlideIds: string[];
   /** vertical placement of the band within each slide. */
   position: 'top' | 'center' | 'bottom' | 'full';
   /** 0..1 — how tall the band is relative to the slide (ignored when full). */
   heightRatio: number;
   /** 0..1 opacity so it can sit behind text as a soft accent. */
   opacity: number;
+  /** focal point of the crop, 0..1 (which part of the photo stays in frame). */
+  focusX: number;
+  focusY: number;
+  /** zoom into the image, 1 = cover the strip, >1 crops in further. */
+  zoom: number;
+  /** 'back' sits behind the text; 'front' sits over it (occupies the region). */
+  layer: 'back' | 'front';
 }
 
 /** Per-element visibility. Everything is toggleable. */

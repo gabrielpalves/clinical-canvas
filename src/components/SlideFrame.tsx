@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import type { Block, Carousel, ElementAlign, Slide } from '../types';
 import { DIMENSIONS, bandForSlide, customBgVars, isHex } from '../lib/helpers';
 import { BLOCK_FONT_FAMILY } from '../designModes';
@@ -144,21 +144,68 @@ function BlockView({ block, slideAlign, frameH }: { block: Block; slideAlign: Sl
   );
 }
 
+/** Measure an image's aspect ratio (w/h) once it loads; null until known. */
+function useImageAspect(src: string): number | null {
+  const [aspect, setAspect] = useState<number | null>(null);
+  useEffect(() => {
+    setAspect(null);
+    if (!src) return;
+    let active = true;
+    const img = new Image();
+    img.onload = () => {
+      if (active && img.naturalWidth && img.naturalHeight) setAspect(img.naturalWidth / img.naturalHeight);
+    };
+    img.src = src;
+    if (img.complete && img.naturalWidth && img.naturalHeight) setAspect(img.naturalWidth / img.naturalHeight);
+    return () => {
+      active = false;
+    };
+  }, [src]);
+  return aspect;
+}
+
 function PanoramaLayer({ slide, carousel }: { slide: Slide; carousel: Carousel }) {
   const slice = bandForSlide(carousel, slide.id);
+  const aspect = useImageAspect(slice?.band.src ?? '');
   if (!slice) return null;
   const { band, index, count } = slice;
-  const posX = count > 1 ? (index / (count - 1)) * 100 : 50;
+  if (band.hiddenSlideIds.includes(slide.id)) return null; // per-slide off
+
+  const { w, h } = DIMENSIONS[carousel.aspect];
+  const bandH = band.position === 'full' ? h : band.heightRatio * h;
+  const stripW = count * w; // the full N-slide strip the image spans
+  const a = aspect ?? 1.5; // sensible fallback for the first frame before it loads
+
+  // Scale the image to COVER the whole strip (no stretch), then zoom in further.
+  // Whichever axis needs the bigger scale wins; the other axis is cropped.
+  let rw: number, rh: number;
+  if (bandH * a >= stripW) {
+    rh = bandH;
+    rw = bandH * a;
+  } else {
+    rw = stripW;
+    rh = stripW / a;
+  }
+  rw *= band.zoom;
+  rh *= band.zoom;
+
+  // Position the cropped image by the focal point; each slide shows its slice by
+  // offsetting the shared image by this band's index within the strip.
+  const offsetX = -(rw - stripW) * band.focusX;
+  const offsetY = -(rh - bandH) * band.focusY;
+
   return (
     <div
       className="cc-band"
       data-position={band.position}
+      data-layer={band.layer}
       style={{
         height: band.position === 'full' ? '100%' : `${band.heightRatio * 100}%`,
         opacity: band.opacity,
         backgroundImage: `url(${band.src})`,
-        backgroundSize: `${count * 100}% 100%`,
-        backgroundPosition: `${posX}% 50%`,
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: `${rw}px ${rh}px`,
+        backgroundPosition: `${offsetX - index * w}px ${offsetY}px`,
       }}
     />
   );

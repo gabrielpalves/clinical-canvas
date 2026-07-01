@@ -306,6 +306,10 @@
   pointer-events: none;
   z-index: 0;
 }
+/* 'front' band sits over the text (occupies the region) instead of behind it. */
+.cc-band[data-layer='front'] {
+  z-index: 3;
+}
 .cc-band[data-position='top'] {
   top: 0;
 }

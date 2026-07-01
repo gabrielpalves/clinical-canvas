@@ -9,6 +9,7 @@ import type {
   ElementAlign,
   EyebrowPlacement,
   HeadingSize,
+  PanoramaBand,
   PresetId,
   Slide,
   SlideImage,
@@ -103,6 +104,42 @@ export function defaultDecoration(kind: Decoration['kind']): Decoration {
     color: 'accent',
     filled: kind === 'blobA' || kind === 'blobB' || kind === 'circle' || kind === 'triangle',
     front: false,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// panorama band (one image spanning several consecutive slides)
+// ---------------------------------------------------------------------------
+
+/** A new panorama band spanning `slideIds`, with sensible crop defaults. */
+export function createBand(src: string, slideIds: string[]): PanoramaBand {
+  return {
+    id: uid(),
+    src,
+    slideIds,
+    hiddenSlideIds: [],
+    position: 'center',
+    heightRatio: 0.62,
+    opacity: 1,
+    focusX: 0.5,
+    focusY: 0.5,
+    zoom: 1,
+    layer: 'back',
+  };
+}
+
+/** Fill any fields a persisted band is missing (forward-compat with old saves). */
+export function normalizeBand(b: PanoramaBand): PanoramaBand {
+  return {
+    ...b,
+    hiddenSlideIds: b.hiddenSlideIds ?? [],
+    position: b.position ?? 'center',
+    heightRatio: b.heightRatio ?? 0.62,
+    opacity: b.opacity ?? 1,
+    focusX: b.focusX ?? 0.5,
+    focusY: b.focusY ?? 0.5,
+    zoom: b.zoom ?? 1,
+    layer: b.layer ?? 'back',
   };
 }
 

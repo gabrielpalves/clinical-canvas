@@ -27,6 +27,7 @@ import {
   createBlock,
   defaultDiagram,
   defaultLayers,
+  normalizeBand,
   presetSlide,
   seedCarousel,
   uid,
@@ -118,7 +119,11 @@ function reducer(state: Carousel, action: Action): Carousel {
       if (state.slides.length <= 1) return state;
       const slides = state.slides.filter((s) => s.id !== action.id);
       const bands = state.bands
-        .map((b) => ({ ...b, slideIds: b.slideIds.filter((sid) => sid !== action.id) }))
+        .map((b) => ({
+          ...b,
+          slideIds: b.slideIds.filter((sid) => sid !== action.id),
+          hiddenSlideIds: b.hiddenSlideIds.filter((sid) => sid !== action.id),
+        }))
         .filter((b) => b.slideIds.length >= 2);
       return { ...state, slides, bands };
     }
@@ -294,7 +299,7 @@ function migrateToV3(old: Record<string, unknown>): Carousel {
     swipePosition: (old.swipePosition as Carousel['swipePosition']) ?? 'bottom',
     caption: (old.caption as string) ?? '',
     slides,
-    bands: (old.bands as Carousel['bands']) ?? [],
+    bands: ((old.bands as PanoramaBand[]) ?? []).map(normalizeBand),
   };
 }
 
@@ -311,7 +316,7 @@ function normalize(c: Record<string, unknown>): Carousel {
     swipeText: (c.swipeText as string) ?? 'arraste',
     swipePosition: (c.swipePosition as Carousel['swipePosition']) ?? 'bottom',
     caption: (c.caption as string) ?? '',
-    bands: (c.bands as Carousel['bands']) ?? [],
+    bands: ((c.bands as PanoramaBand[]) ?? []).map(normalizeBand),
     slides: carousel.slides.map((s) => ({
       ...s,
       bgColor: s.bgColor ?? 'auto',
