@@ -118,28 +118,34 @@ export function createBand(src: string, slideIds: string[]): PanoramaBand {
     src,
     slideIds,
     hiddenSlideIds: [],
+    frontSlideIds: [],
+    startInset: 0,
+    endInset: 0,
     position: 'center',
     heightRatio: 0.62,
     opacity: 1,
     focusX: 0.5,
     focusY: 0.5,
     zoom: 1,
-    layer: 'back',
   };
 }
 
 /** Fill any fields a persisted band is missing (forward-compat with old saves). */
 export function normalizeBand(b: PanoramaBand): PanoramaBand {
+  // migrate the old band-wide `layer:'front'` to a per-slide front list
+  const legacyLayer = (b as unknown as { layer?: 'back' | 'front' }).layer;
   return {
     ...b,
     hiddenSlideIds: b.hiddenSlideIds ?? [],
+    frontSlideIds: b.frontSlideIds ?? (legacyLayer === 'front' ? (b.slideIds ?? []) : []),
+    startInset: b.startInset ?? 0,
+    endInset: b.endInset ?? 0,
     position: b.position ?? 'center',
     heightRatio: b.heightRatio ?? 0.62,
     opacity: b.opacity ?? 1,
     focusX: b.focusX ?? 0.5,
     focusY: b.focusY ?? 0.5,
     zoom: b.zoom ?? 1,
-    layer: b.layer ?? 'back',
   };
 }
 

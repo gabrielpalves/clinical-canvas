@@ -173,39 +173,58 @@ function PanoramaLayer({ slide, carousel }: { slide: Slide; carousel: Carousel }
 
   const { w, h } = DIMENSIONS[carousel.aspect];
   const bandH = band.position === 'full' ? h : band.heightRatio * h;
-  const stripW = count * w; // the full N-slide strip the image spans
+
+  // The image occupies a horizontal strip that can leave part of the first slide
+  // (startInset) and last slide (endInset) empty — a strip crossing the seam.
+  const startX = band.startInset * w; // empty on the left of the first slide
+  const endX = band.endInset * w; // empty on the right of the last slide
+  const visibleStart = startX; // strip coord where the image begins
+  const visibleEnd = count * w - endX; // strip coord where the image ends
+  const visibleW = visibleEnd - visibleStart;
   const a = aspect ?? 1.5; // sensible fallback for the first frame before it loads
 
-  // Scale the image to COVER the whole strip (no stretch), then zoom in further.
+  // Scale the image to COVER the visible strip (no stretch), then zoom in further.
   // Whichever axis needs the bigger scale wins; the other axis is cropped.
   let rw: number, rh: number;
-  if (bandH * a >= stripW) {
+  if (bandH * a >= visibleW) {
     rh = bandH;
     rw = bandH * a;
   } else {
-    rw = stripW;
-    rh = stripW / a;
+    rw = visibleW;
+    rh = visibleW / a;
   }
   rw *= band.zoom;
   rh *= band.zoom;
 
-  // Position the cropped image by the focal point; each slide shows its slice by
-  // offsetting the shared image by this band's index within the strip.
-  const offsetX = -(rw - stripW) * band.focusX;
+  // Place the cropped image by the focal point (strip coordinates).
+  const imageLeft = visibleStart - (rw - visibleW) * band.focusX;
   const offsetY = -(rh - bandH) * band.focusY;
+
+  // This slide's horizontal window in slide-local px: the first slide starts at
+  // startX, the last ends at w-endX, the middle slides are full width.
+  const x0 = index === 0 ? startX : 0;
+  const x1 = index === count - 1 ? w - endX : w;
+  const boxW = x1 - x0;
+  if (boxW <= 0) return null;
+
+  const front = band.frontSlideIds.includes(slide.id);
 
   return (
     <div
       className="cc-band"
       data-position={band.position}
-      data-layer={band.layer}
+      data-layer={front ? 'front' : 'back'}
       style={{
+        left: `${x0}px`,
+        right: 'auto',
+        width: `${boxW}px`,
         height: band.position === 'full' ? '100%' : `${band.heightRatio * 100}%`,
         opacity: band.opacity,
         backgroundImage: `url(${band.src})`,
         backgroundRepeat: 'no-repeat',
         backgroundSize: `${rw}px ${rh}px`,
-        backgroundPosition: `${offsetX - index * w}px ${offsetY}px`,
+        // band-local origin sits at strip coord (index*w + x0)
+        backgroundPosition: `${imageLeft - (index * w + x0)}px ${offsetY}px`,
       }}
     />
   );

@@ -347,7 +347,7 @@ export function Inspector() {
       {/* panorama */}
       <section className="inspector__section">
         <h3 className="section__title">Imagem contínua (panorama)</h3>
-        <p className="section__hint">Uma imagem distribuída por slides seguidos, criando a continuação ao arrastar.</p>
+        <p className="section__hint">Uma imagem distribuída por slides seguidos, criando a continuação ao arrastar. Use os recuos para ocupar só parte do 1º e do último slide, e defina fundo/frente por slide.</p>
         {band ? (
           <>
             <Field label={`Quantos slides: ${band.band.slideIds.length}`}>
@@ -371,14 +371,13 @@ export function Inspector() {
             <Field label={`Opacidade: ${Math.round(band.band.opacity * 100)}%`}>
               <input type="range" min={10} max={100} value={Math.round(band.band.opacity * 100)} onChange={(e) => dispatch({ type: 'updateBand', id: band.band.id, patch: { opacity: Number(e.target.value) / 100 } })} />
             </Field>
-            <Field label="Camada">
-              <div className="seg">
-                {(['back', 'front'] as const).map((l) => (
-                  <button key={l} className={`seg__btn${band.band.layer === l ? ' is-active' : ''}`} onClick={() => dispatch({ type: 'updateBand', id: band.band.id, patch: { layer: l } })}>
-                    {l === 'back' ? 'Fundo (atrás do texto)' : 'Frente (ocupa a área)'}
-                  </button>
-                ))}
-              </div>
+            <Field label={`Recuo esquerdo (slide ${carousel.slides.findIndex((s) => s.id === band.band.slideIds[0]) + 1}): ${Math.round(band.band.startInset * 100)}%`}>
+              <input type="range" min={0} max={90} value={Math.round(band.band.startInset * 100)}
+                onChange={(e) => dispatch({ type: 'updateBand', id: band.band.id, patch: { startInset: Number(e.target.value) / 100 } })} />
+            </Field>
+            <Field label={`Recuo direito (slide ${carousel.slides.findIndex((s) => s.id === band.band.slideIds[band.band.slideIds.length - 1]) + 1}): ${Math.round(band.band.endInset * 100)}%`}>
+              <input type="range" min={0} max={90} value={Math.round(band.band.endInset * 100)}
+                onChange={(e) => dispatch({ type: 'updateBand', id: band.band.id, patch: { endInset: Number(e.target.value) / 100 } })} />
             </Field>
             <Field label={`Zoom: ${Math.round(band.band.zoom * 100)}%`}>
               <input type="range" min={100} max={300} value={Math.round(band.band.zoom * 100)}
@@ -393,19 +392,30 @@ export function Inspector() {
                 onChange={(e) => dispatch({ type: 'updateBand', id: band.band.id, patch: { focusY: Number(e.target.value) / 100 } })} />
             </Field>
             <div className="field">
-              <span className="field__label">Mostrar a imagem em quais slides</span>
-              <div className="chip-row">
-                {band.band.slideIds.map((sid) => {
-                  const n = carousel.slides.findIndex((s) => s.id === sid) + 1;
-                  const on = !band.band.hiddenSlideIds.includes(sid);
-                  return (
-                    <button key={sid} className={`chip${on ? ' is-active' : ''}`}
-                      onClick={() => dispatch({ type: 'updateBand', id: band.band.id, patch: { hiddenSlideIds: on ? [...band.band.hiddenSlideIds, sid] : band.band.hiddenSlideIds.filter((x) => x !== sid) } })}>
-                      Slide {n}
-                    </button>
-                  );
-                })}
-              </div>
+              <span className="field__label">Camada por slide</span>
+              {band.band.slideIds.map((sid) => {
+                const n = carousel.slides.findIndex((s) => s.id === sid) + 1;
+                const mode = band.band.hiddenSlideIds.includes(sid) ? 'off' : band.band.frontSlideIds.includes(sid) ? 'front' : 'back';
+                const setMode = (m: 'off' | 'back' | 'front') => {
+                  const hidden = band.band.hiddenSlideIds.filter((x) => x !== sid);
+                  const fronts = band.band.frontSlideIds.filter((x) => x !== sid);
+                  if (m === 'off') hidden.push(sid);
+                  if (m === 'front') fronts.push(sid);
+                  dispatch({ type: 'updateBand', id: band.band.id, patch: { hiddenSlideIds: hidden, frontSlideIds: fronts } });
+                };
+                return (
+                  <div key={sid} className="band-slide">
+                    <span className="band-slide__label">Slide {n}</span>
+                    <div className="seg seg--sm">
+                      {(['off', 'back', 'front'] as const).map((m) => (
+                        <button key={m} className={`seg__btn${mode === m ? ' is-active' : ''}`} onClick={() => setMode(m)}>
+                          {m === 'off' ? 'Oculto' : m === 'back' ? 'Fundo' : 'Frente'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
             <button className="btn btn--ghost btn--sm" onClick={() => dispatch({ type: 'removeBand', id: band.band.id })}><Trash2 size={14} /> Remover panorama</button>
           </>

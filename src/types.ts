@@ -192,6 +192,14 @@ export interface PanoramaBand {
   slideIds: string[];
   /** ids (subset of slideIds) where the image is hidden — per-slide on/off. */
   hiddenSlideIds: string[];
+  /** ids (subset of slideIds) rendered in FRONT of the text; the rest sit
+   *  behind it. Lets "part in the background, part in front" per slide. */
+  frontSlideIds: string[];
+  /** 0..0.9 — empty fraction on the LEFT of the first covered slide, so the
+   *  image occupies only part of it (a strip crossing the seam). */
+  startInset: number;
+  /** 0..0.9 — empty fraction on the RIGHT of the last covered slide. */
+  endInset: number;
   /** vertical placement of the band within each slide. */
   position: 'top' | 'center' | 'bottom' | 'full';
   /** 0..1 — how tall the band is relative to the slide (ignored when full). */
@@ -203,8 +211,6 @@ export interface PanoramaBand {
   focusY: number;
   /** zoom into the image, 1 = cover the strip, >1 crops in further. */
   zoom: number;
-  /** 'back' sits behind the text; 'front' sits over it (occupies the region). */
-  layer: 'back' | 'front';
 }
 
 /** Per-element visibility. Everything is toggleable. */
