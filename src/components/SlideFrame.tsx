@@ -253,6 +253,16 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
   const frameStyle: Record<string, string | number> = { width: w, height: h };
   if (customBg) Object.assign(frameStyle, customBgVars(slide.bgCustom));
 
+  // A panorama part set to "front" on this slide should OCCUPY space (not just
+  // overlay the text): reserve its height so the text column reflows into what's
+  // left. Cleanly supported for top/bottom bands (full/center stay as overlay).
+  const pano = bandForSlide(carousel, slide.id);
+  const panoFront =
+    !!pano && pano.band.frontSlideIds.includes(slide.id) && !pano.band.hiddenSlideIds.includes(slide.id);
+  const panoH = pano ? pano.band.heightRatio * h : 0;
+  const reserveTop = panoFront && pano!.band.position === 'top' ? panoH : 0;
+  const reserveBottom = panoFront && pano!.band.position === 'bottom' ? panoH : 0;
+
   return (
     <div
       className="cc-frame"
@@ -291,6 +301,8 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
           </svg>
         </span>
       )}
+
+      {reserveTop > 0 && <div className="cc-band-space" style={{ height: reserveTop }} aria-hidden />}
 
       <div className="cc-editorial">
         {eyebrowTop && (
@@ -344,6 +356,8 @@ export function SlideFrame({ slide, carousel, index, total }: Props) {
           );
         })()}
       </footer>
+
+      {reserveBottom > 0 && <div className="cc-band-space" style={{ height: reserveBottom }} aria-hidden />}
 
       <Decorations decorations={slide.decorations.filter((d) => d.front)} w={w} h={h} className="cc-decos cc-decos--front" />
     </div>

@@ -347,7 +347,7 @@ export function Inspector() {
       {/* panorama */}
       <section className="inspector__section">
         <h3 className="section__title">Imagem contínua (panorama)</h3>
-        <p className="section__hint">Uma imagem distribuída por slides seguidos, criando a continuação ao arrastar. Use os recuos para ocupar só parte do 1º e do último slide, e defina fundo/frente por slide.</p>
+        <p className="section__hint">Uma imagem distribuída por slides seguidos, criando a continuação ao arrastar. Use os recuos para ocupar só parte do 1º e do último slide. Por slide: <b>Fundo</b> (atrás do texto), <b>Frente</b> (ocupa o espaço — o texto se ajusta ao restante; ideal com posição Topo ou Base) ou <b>Oculto</b>.</p>
         {band ? (
           <>
             <Field label={`Quantos slides: ${band.band.slideIds.length}`}>

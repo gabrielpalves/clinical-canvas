@@ -310,6 +310,13 @@
 .cc-band[data-layer='front'] {
   z-index: 3;
 }
+/* reserves layout space for a "front" top/bottom band so the text reflows into
+   the remaining area instead of being covered by the image. */
+.cc-band-space {
+  flex-shrink: 0;
+  width: 100%;
+  pointer-events: none;
+}
 .cc-band[data-position='top'] {
   top: 0;
 }
